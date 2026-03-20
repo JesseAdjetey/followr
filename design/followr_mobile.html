@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Followr — UI Mockup</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f0ed;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+
+  .phone {
+    width: 390px;
+    height: 700px;
+    background: #f5f5f2;
+    border-radius: 40px;
+    border: 1px solid #ddddd8;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+  }
+
+  .screen {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    background: #f5f5f2;
+  }
+  .screen.active { display: flex; }
+
+  /* TOP NAV */
+  .topnav {
+    background: #ffffff;
+    border-bottom: 0.5px solid rgba(0,0,0,0.10);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 52px;
+  }
+  .topnav-title { font-size: 16px; font-weight: 600; color: #1a1a1a; flex: 1; }
+  .topnav-sub { font-size: 12px; color: #888; flex: 1; }
+  .back-btn {
+    font-size: 14px; color: #378ADD; cursor: pointer;
+    background: none; border: none; padding: 0;
+    display: flex; align-items: center; gap: 3px; font-family: inherit;
+  }
+  .nav-pill {
+    font-size: 10px; padding: 3px 9px; border-radius: 99px; font-weight: 600;
+  }
+  .nav-pill.overdue { background: #FCEBEB; color: #A32D2D; }
+
+  /* FILTER TABS */
+  .filter-row {
+    display: flex; gap: 6px; padding: 10px 18px;
+    background: #ffffff;
+    border-bottom: 0.5px solid rgba(0,0,0,0.10);
+    overflow-x: auto;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .ftab {
+    font-size: 12px; padding: 5px 13px; border-radius: 99px; cursor: pointer;
+    white-space: nowrap; border: 0.5px solid rgba(0,0,0,0.15);
+    color: #666; background: transparent; font-family: inherit;
+    transition: all 0.15s;
+  }
+  .ftab.active {
+    background: #1a1a1a; color: #fff; border-color: #1a1a1a; font-weight: 500;
+  }
+
+  /* FEED */
+  .feed { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .feed::-webkit-scrollbar { display: none; }
+  .slabel {
+    font-size: 10px; font-weight: 600; color: #aaa;
+    letter-spacing: 0.07em; text-transform: uppercase; margin: 8px 0 3px;
+  }
+  .slabel:first-child { margin-top: 0; }
+
+  /* CARDS */
+  .card {
+    background: #ffffff; border: 0.5px solid rgba(0,0,0,0.10);
+    border-radius: 14px; padding: 13px 15px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 7px;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .card:active { transform: scale(0.98); }
+  .card.red   { border-left: 3px solid #E24B4A; border-radius: 0 14px 14px 0; }
+  .card.amber { border-left: 3px solid #EF9F27; border-radius: 0 14px 14px 0; }
+  .card.blue  { border-left: 3px solid #378ADD; border-radius: 0 14px 14px 0; }
+  .card-subj { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+  .card-to   { font-size: 12px; color: #888; }
+  .card-row  { display: flex; align-items: center; justify-content: space-between; }
+  .dots { display: flex; gap: 4px; align-items: center; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #ddd; }
+  .dot.g { background: #1D9E75; }
+  .dot.b { background: #378ADD; }
+  .chint { font-size: 11px; color: #aaa; }
+  .pill { font-size: 10px; padding: 3px 9px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
+  .pill.r  { background: #FCEBEB; color: #A32D2D; }
+  .pill.a  { background: #FAEEDA; color: #854F0B; }
+  .pill.bl { background: #E6F1FB; color: #185FA5; }
+  .pill.gr { background: #f0f0ed; color: #888; }
+
+  /* NEW EMAIL BANNER */
+  .new-banner {
+    margin: 14px 18px 0;
+    background: #E6F1FB; border: 0.5px solid #85B7EB;
+    border-radius: 14px; padding: 12px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; cursor: pointer;
+  }
+  .new-banner-text { font-size: 13px; color: #0C447C; font-weight: 600; }
+  .new-banner-sub  { font-size: 11px; color: #185FA5; margin-top: 2px; }
+  .setup-btn {
+    font-size: 12px; background: #378ADD; color: #fff;
+    border: none; border-radius: 8px; padding: 7px 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 600; font-family: inherit;
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    background: #ffffff; border-top: 0.5px solid rgba(0,0,0,0.10);
+    display: flex;
+  }
+  .bnav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 4px; padding: 10px 0;
+    cursor: pointer; color: #bbb; font-size: 10px; font-weight: 500;
+    transition: color 0.15s;
+  }
+  .bnav-item.active { color: #378ADD; }
+  .bnav-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+  .bnav-lines { display: flex; flex-direction: column; gap: 3px; }
+  .bnav-line  { height: 2px; background: currentColor; border-radius: 2px; }
+  .bnav-sq    { width: 15px; height: 15px; border: 2px solid currentColor; border-radius: 3px; }
+
+  /* SCROLLABLE WRAPPER */
+  .scrollable { flex: 1; overflow-y: auto; }
+  .scrollable::-webkit-scrollbar { display: none; }
+
+  /* DETAIL */
+  .detail-head {
+    background: #fff; padding: 14px 18px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.10);
+  }
+  .detail-subj { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .detail-to   { font-size: 12px; color: #888; margin-top: 3px; }
+
+  /* SEQUENCE */
+  .seq-section {
+    background: #fff; padding: 14px 18px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.10);
+  }
+  .sec-lbl {
+    font-size: 10px; font-weight: 600; color: #aaa;
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px;
+  }
+  .seq-track { display: flex; align-items: flex-start; }
+  .sstep  { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .scircle {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+  }
+  .scircle.done { background: #E1F5EE; color: #0F6E56; }
+  .scircle.act  { background: #E6F1FB; color: #185FA5; border: 1.5px solid #378ADD; }
+  .scircle.pend { background: #f0f0ed; color: #aaa; }
+  .sline { flex: 1; height: 1px; background: #e0e0dc; margin-top: 15px; }
+  .sline.done { background: #1D9E75; }
+  .sdate   { font-size: 10px; color: #aaa; text-align: center; }
+  .sstatus { font-size: 10px; color: #aaa; text-align: center; }
+  .sstatus.act  { color: #185FA5; font-weight: 600; }
+  .sstatus.done { color: #0F6E56; }
+
+  /* CONTACT BAR */
+  .cbar {
+    background: #fff; margin-top: 8px; padding: 12px 18px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.10);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .avatar {
+    width: 36px; height: 36px; min-width: 36px; border-radius: 50%;
+    background: #E6F1FB; display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 600; color: #185FA5;
+  }
+  .cname  { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+  .cemail { font-size: 11px; color: #888; }
+  .snooze-btn {
+    margin-left: auto; font-size: 11px; color: #666;
+    background: #f0f0ed; border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 8px; padding: 5px 10px; cursor: pointer;
+    white-space: nowrap; font-family: inherit;
+  }
+
+  /* THREAD */
+  .thread { padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { display: flex; flex-direction: column; gap: 4px; }
+  .msg.out { align-items: flex-end; }
+  .mmeta { display: flex; align-items: center; gap: 6px; }
+  .mfrom { font-size: 11px; font-weight: 600; color: #888; }
+  .mdate { font-size: 10px; color: #bbb; }
+  .mbubble {
+    font-size: 12px; line-height: 1.6; border-radius: 14px;
+    padding: 9px 13px; max-width: 90%; color: #1a1a1a; background: #f0f0ed;
+  }
+  .mbubble.out   { background: #E6F1FB; color: #0C447C; }
+  .mbubble.ghost {
+    background: transparent; border: 0.5px dashed rgba(0,0,0,0.2);
+    color: #888; font-style: italic;
+  }
+  .ghost-tag {
+    font-size: 10px; color: #378ADD; font-weight: 600;
+    margin-bottom: 2px; display: flex; align-items: center; gap: 4px;
+  }
+  .ghost-dot { width: 5px; height: 5px; border-radius: 50%; background: #378ADD; }
+  .edit-lnk { font-size: 11px; color: #378ADD; cursor: pointer; margin-top: 2px; }
+  .divline { display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+  .divline-l { flex: 1; height: 0.5px; background: rgba(0,0,0,0.12); }
+  .divline-t { font-size: 10px; color: #bbb; white-space: nowrap; }
+
+  /* SETUP */
+  .setup-body {
+    flex: 1; overflow-y: auto; padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .setup-body::-webkit-scrollbar { display: none; }
+  .setup-intro {
+    background: #f0f0ed; border-radius: 14px; padding: 12px 14px;
+  }
+  .setup-intro-subj    { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+  .setup-intro-from    { font-size: 11px; color: #888; margin-top: 2px; }
+  .setup-intro-preview {
+    font-size: 12px; color: #888; margin-top: 8px; line-height: 1.5;
+    border-top: 0.5px solid rgba(0,0,0,0.10); padding-top: 8px;
+  }
+
+  .step-card {
+    background: #fff; border: 0.5px solid rgba(0,0,0,0.10);
+    border-radius: 14px; overflow: hidden;
+  }
+  .step-header {
+    padding: 11px 14px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.08);
+  }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 50%; background: #f0f0ed;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #888;
+  }
+  .step-title { font-size: 13px; font-weight: 600; color: #1a1a1a; flex: 1; }
+  .remove-lnk { font-size: 11px; color: #bbb; cursor: pointer; }
+  .step-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .field-label { font-size: 11px; color: #888; margin-bottom: 4px; font-weight: 500; }
+
+  .timing-row { display: flex; gap: 8px; align-items: center; }
+  .timing-input {
+    width: 60px; padding: 7px 10px;
+    border: 0.5px solid rgba(0,0,0,0.15); border-radius: 8px;
+    font-size: 13px; color: #1a1a1a; background: #fff; font-family: inherit;
+  }
+  .timing-select {
+    flex: 1; padding: 7px 10px;
+    border: 0.5px solid rgba(0,0,0,0.15); border-radius: 8px;
+    font-size: 13px; color: #1a1a1a; background: #fff; font-family: inherit;
+  }
+
+  .source-toggle {
+    display: flex; border: 0.5px solid rgba(0,0,0,0.15);
+    border-radius: 8px; overflow: hidden;
+  }
+  .stoggle {
+    flex: 1; padding: 7px; font-size: 12px; text-align: center;
+    cursor: pointer; color: #888; background: transparent;
+    border: none; font-family: inherit; transition: all 0.15s;
+  }
+  .stoggle.active { background: #1a1a1a; color: #fff; font-weight: 500; }
+
+  .template-select {
+    width: 100%; padding: 7px 10px; margin-top: 8px;
+    border: 0.5px solid rgba(0,0,0,0.15); border-radius: 8px;
+    font-size: 12px; color: #1a1a1a; background: #fff; font-family: inherit;
+  }
+  .mini-textarea {
+    width: 100%; padding: 8px 10px; margin-top: 8px;
+    border: 0.5px solid rgba(0,0,0,0.15); border-radius: 8px;
+    font-size: 12px; color: #1a1a1a; background: #fff;
+    resize: none; line-height: 1.5; font-family: inherit;
+  }
+
+  .add-step-btn {
+    border: 0.5px dashed rgba(0,0,0,0.2); border-radius: 14px;
+    padding: 13px; text-align: center; font-size: 13px; color: #888;
+    cursor: pointer; background: transparent; width: 100%; font-family: inherit;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .add-step-btn:hover { border-color: #378ADD; color: #378ADD; }
+
+  .setup-footer {
+    background: #fff; border-top: 0.5px solid rgba(0,0,0,0.10);
+    padding: 12px 18px; display: flex; gap: 10px;
+  }
+  .btn-primary {
+    flex: 1; background: #1a1a1a; color: #fff; border: none;
+    border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: opacity 0.15s;
+  }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-ghost {
+    background: transparent; border: 0.5px solid rgba(0,0,0,0.15);
+    border-radius: 10px; padding: 11px 16px; font-size: 13px;
+    color: #888; cursor: pointer; font-family: inherit;
+  }
+
+  /* TEMPLATES */
+  .tmpl-body {
+    flex: 1; overflow-y: auto; padding: 14px 18px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .tmpl-body::-webkit-scrollbar { display: none; }
+  .tmpl-card {
+    background: #fff; border: 0.5px solid rgba(0,0,0,0.10);
+    border-radius: 14px; padding: 13px 15px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .tmpl-name    { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+  .tmpl-preview { font-size: 12px; color: #888; line-height: 1.5; }
+  .tmpl-var     { color: #378ADD; font-weight: 500; }
+  .tmpl-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .tmpl-btn {
+    font-size: 11px; color: #666; background: #f0f0ed;
+    border: 0.5px solid rgba(0,0,0,0.10); border-radius: 6px;
+    padding: 4px 10px; cursor: pointer; font-family: inherit;
+  }
+  .tmpl-btn.del { color: #A32D2D; }
+
+  .new-tmpl-btn {
+    border: 0.5px dashed rgba(0,0,0,0.2); border-radius: 14px;
+    padding: 14px; text-align: center; font-size: 13px; color: #888;
+    cursor: pointer; background: transparent; width: 100%; font-family: inherit;
+  }
+  .new-tmpl-btn:hover { border-color: #378ADD; color: #378ADD; }
+
+  /* MODE TOGGLE IN SETUP */
+  .mode-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 0.5px solid rgba(0,0,0,0.10);
+    border-radius: 14px; padding: 12px 14px;
+  }
+  .mode-label { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+  .mode-sub   { font-size: 11px; color: #888; margin-top: 2px; }
+  .toggle-wrap { display: flex; background: #f0f0ed; border-radius: 8px; padding: 2px; }
+  .toggle-opt {
+    font-size: 11px; padding: 5px 10px; border-radius: 6px;
+    cursor: pointer; color: #888; font-family: inherit; border: none;
+    background: transparent; font-weight: 500; transition: all 0.15s;
+  }
+  .toggle-opt.active { background: #fff; color: #1a1a1a; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- ── HOME ─────────────────────────────────────────── -->
+  <div class="screen active" id="s-home">
+    <div class="topnav">
+      <div style="flex:1">
+        <div class="topnav-title">Followr</div>
+      </div>
+      <div style="font-size:11px;color:#888">CC: <span style="color:#1a1a1a;font-weight:600"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="53353c3f3f3c2426231332303e367d303c3e">[email&#160;protected]</a></span></div>
+    </div>
+
+    <div class="new-banner" onclick="go('s-setup')">
+      <div>
+        <div class="new-banner-text">New email detected</div>
+        <div class="new-banner-sub">Q4 partnership proposal · James Osei</div>
+      </div>
+      <button class="setup-btn">Set up</button>
+    </div>
+
+    <div class="filter-row">
+      <button class="ftab active">All</button>
+      <button class="ftab">Overdue</button>
+      <button class="ftab">Due today</button>
+      <button class="ftab">This week</button>
+      <button class="ftab">Replied</button>
+    </div>
+
+    <div class="feed">
+      <div class="slabel">Overdue</div>
+      <div class="card red" onclick="go('s-detail')">
+        <div class="card-row">
+          <div class="card-subj">Dev contract — signature needed</div>
+          <div class="pill r">1 day overdue</div>
+        </div>
+        <div class="card-to">Amara Diallo · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3f5e525e4d5e7f4b5a5c575c504d4f115650">[email&#160;protected]</a></div>
+        <div class="card-row">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="dots"><div class="dot g"></div><div class="dot b"></div><div class="dot"></div></div>
+            <div class="chint">Follow-up 2 of 3 · needs approval</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slabel">Due today</div>
+      <div class="card amber" onclick="go('s-detail')">
+        <div class="card-row">
+          <div class="card-subj">Invoice #1042 outstanding</div>
+          <div class="pill a">Due today</div>
+        </div>
+        <div class="card-to">Finance · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9dfff4f1f1f4f3faddfef1f4f8f3e9b3fef2f0">[email&#160;protected]</a></div>
+        <div class="card-row">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="dots"><div class="dot b"></div><div class="dot"></div><div class="dot"></div></div>
+            <div class="chint">Follow-up 1 of 3 · auto-send</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slabel">This week</div>
+      <div class="card blue" onclick="go('s-detail')">
+        <div class="card-row">
+          <div class="card-subj">Intro call scheduling</div>
+          <div class="pill bl">In 3 days</div>
+        </div>
+        <div class="card-to">Kwame Mensah · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b1dac6d0dcd4f1d7dec4dfd5d4c3c29fd6d9">[email&#160;protected]</a></div>
+        <div class="card-row">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="dots"><div class="dot g"></div><div class="dot b"></div><div class="dot"></div></div>
+            <div class="chint">Follow-up 2 of 3 · auto-send</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card blue" onclick="go('s-detail')">
+        <div class="card-row">
+          <div class="card-subj">SaaS renewal discussion</div>
+          <div class="pill bl">In 5 days</div>
+        </div>
+        <div class="card-to">Remi Adeyemi · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="96e4f3fbffd6f5faf9e3f2b8f8f1">[email&#160;protected]</a></div>
+        <div class="card-row">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="dots"><div class="dot b"></div><div class="dot"></div><div class="dot"></div></div>
+            <div class="chint">Follow-up 1 of 2 · auto-send</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="bnav-item active" onclick="go('s-home')">
+        <div class="bnav-icon"><div class="bnav-lines"><div class="bnav-line" style="width:18px"></div><div class="bnav-line" style="width:13px"></div><div class="bnav-line" style="width:16px"></div></div></div>
+        <span>Feed</span>
+      </div>
+      <div class="bnav-item" onclick="go('s-templates')">
+        <div class="bnav-icon"><div class="bnav-sq"></div></div>
+        <span>Templates</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DETAIL ────────────────────────────────────────── -->
+  <div class="screen" id="s-detail">
+    <div class="topnav">
+      <button class="back-btn" onclick="go('s-home')">‹ Back</button>
+      <div class="topnav-title" style="text-align:center">Dev contract</div>
+      <div class="nav-pill overdue">Overdue</div>
+    </div>
+
+    <div class="scrollable">
+      <div class="seq-section">
+        <div class="sec-lbl">Follow-up sequence</div>
+        <div class="seq-track">
+          <div class="sstep"><div class="scircle done">1</div><div class="sdate">Mar 8</div><div class="sstatus done">Sent</div></div>
+          <div class="sline done"></div>
+          <div class="sstep"><div class="scircle act">2</div><div class="sdate">Mar 14</div><div class="sstatus act">Overdue</div></div>
+          <div class="sline"></div>
+          <div class="sstep"><div class="scircle pend">3</div><div class="sdate">Mar 21</div><div class="sstatus">Pending</div></div>
+        </div>
+      </div>
+
+      <div class="cbar">
+        <div class="avatar">AD</div>
+        <div><div class="cname">Amara Diallo</div><div class="cemail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d9b8b4b8abb899adbcbab1bab6aba9f7b0b6">[email&#160;protected]</a></div></div>
+        <button class="snooze-btn">Snooze 2 days</button>
+      </div>
+
+      <div class="thread">
+        <div class="msg out">
+          <div class="mmeta"><div class="mfrom">You</div><div class="mdate">Mar 8</div></div>
+          <div class="mbubble out">Hi Amara, following up on the dev contract — please let me know when you're ready to sign so we can get started.</div>
+        </div>
+
+        <div class="divline">
+          <div class="divline-l"></div>
+          <div class="divline-t">now · overdue by 1 day</div>
+          <div class="divline-l"></div>
+        </div>
+
+        <div class="msg out">
+          <div class="ghost-tag"><div class="ghost-dot"></div>Scheduled · follow-up 2 · needs approval</div>
+          <div class="mbubble ghost">Hi Amara, bumping this up — happy to answer any questions before you sign. Let me know!</div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <div class="edit-lnk">Edit first ›</div>
+            <div style="font-size:11px;color:#1D9E75;cursor:pointer;font-weight:600">Approve & send ›</div>
+          </div>
+        </div>
+
+        <div class="msg out">
+          <div class="ghost-tag"><div class="ghost-dot"></div>Scheduled · follow-up 3 · Mar 21</div>
+          <div class="mbubble ghost">Final nudge on the contract — let me know either way and I'll update things on our end.</div>
+          <div class="edit-lnk">Edit before sending ›</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="bnav-item" onclick="go('s-home')">
+        <div class="bnav-icon"><div class="bnav-lines"><div class="bnav-line" style="width:18px"></div><div class="bnav-line" style="width:13px"></div><div class="bnav-line" style="width:16px"></div></div></div>
+        <span>Feed</span>
+      </div>
+      <div class="bnav-item" onclick="go('s-templates')">
+        <div class="bnav-icon"><div class="bnav-sq"></div></div>
+        <span>Templates</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SETUP ─────────────────────────────────────────── -->
+  <div class="screen" id="s-setup">
+    <div class="topnav">
+      <button class="back-btn" onclick="go('s-home')">‹ Back</button>
+      <div class="topnav-title" style="text-align:center;flex:1">Set up follow-ups</div>
+    </div>
+
+    <div class="setup-body">
+      <div class="setup-intro">
+        <div class="setup-intro-subj">Q4 partnership proposal</div>
+        <div class="setup-intro-from">From: James Osei · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="395358545c4a794f5c574d4c4b5c175a56">[email&#160;protected]</a> · Mar 19</div>
+        <div class="setup-intro-preview">Hi, I wanted to reach out regarding a potential Q4 partnership opportunity. Please find the attached proposal...</div>
+      </div>
+
+      <div class="mode-row">
+        <div>
+          <div class="mode-label">Send mode</div>
+          <div class="mode-sub">Override your global default</div>
+        </div>
+        <div class="toggle-wrap">
+          <button class="toggle-opt" onclick="toggleMode(this)">Auto-send</button>
+          <button class="toggle-opt active" onclick="toggleMode(this)">Needs approval</button>
+        </div>
+      </div>
+
+      <div id="steps-container">
+        <div class="step-card">
+          <div class="step-header">
+            <div class="step-num">1</div>
+            <div class="step-title">First follow-up</div>
+            <span class="remove-lnk" onclick="removeStep(this)">Remove</span>
+          </div>
+          <div class="step-body">
+            <div>
+              <div class="field-label">Send after</div>
+              <div class="timing-row">
+                <input class="timing-input" type="number" value="3" min="1">
+                <select class="timing-select"><option>days</option><option>weeks</option></select>
+              </div>
+            </div>
+            <div>
+              <div class="field-label">Message</div>
+              <div class="source-toggle">
+                <button class="stoggle active">Use template</button>
+                <button class="stoggle" onclick="toggleSource(this)">Write custom</button>
+              </div>
+              <select class="template-select">
+                <option>Gentle nudge</option>
+                <option>Invoice reminder</option>
+                <option>Final check-in</option>
+                <option>Partnership follow-up</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card" style="margin-top:10px">
+          <div class="step-header">
+            <div class="step-num">2</div>
+            <div class="step-title">Second follow-up</div>
+            <span class="remove-lnk" onclick="removeStep(this)">Remove</span>
+          </div>
+          <div class="step-body">
+            <div>
+              <div class="field-label">Send after</div>
+              <div class="timing-row">
+                <input class="timing-input" type="number" value="7" min="1">
+                <select class="timing-select"><option>days</option><option>weeks</option></select>
+              </div>
+            </div>
+            <div>
+              <div class="field-label">Message</div>
+              <div class="source-toggle">
+                <button class="stoggle" onclick="toggleSource(this)">Use template</button>
+                <button class="stoggle active">Write custom</button>
+              </div>
+              <textarea class="mini-textarea" rows="3">Hi James, just checking in again on the Q4 proposal — happy to jump on a quick call if that's easier.</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="add-step-btn" onclick="addStep()">+ Add another follow-up</button>
+    </div>
+
+    <div class="setup-footer">
+      <button class="btn-ghost" onclick="go('s-home')">Skip</button>
+      <button class="btn-primary" onclick="go('s-home')">Activate follow-ups</button>
+    </div>
+  </div>
+
+  <!-- ── TEMPLATES ──────────────────────────────────────── -->
+  <div class="screen" id="s-templates">
+    <div class="topnav">
+      <div class="topnav-title">Templates</div>
+    </div>
+
+    <div class="tmpl-body">
+      <div class="tmpl-card">
+        <div class="tmpl-name">Gentle nudge</div>
+        <div class="tmpl-preview">Hi <span class="tmpl-var">{{name}}</span>, just following up on my previous message — wanted to make sure it didn't get buried. Let me know your thoughts!</div>
+        <div class="tmpl-actions">
+          <button class="tmpl-btn">Edit</button>
+          <button class="tmpl-btn">Duplicate</button>
+          <button class="tmpl-btn del">Delete</button>
+        </div>
+      </div>
+
+      <div class="tmpl-card">
+        <div class="tmpl-name">Invoice reminder</div>
+        <div class="tmpl-preview">Hi <span class="tmpl-var">{{name}}</span>, this is a friendly reminder that invoice <span class="tmpl-var">{{invoice}}</span> is outstanding. Please let me know if you have any questions.</div>
+        <div class="tmpl-actions">
+          <button class="tmpl-btn">Edit</button>
+          <button class="tmpl-btn">Duplicate</button>
+          <button class="tmpl-btn del">Delete</button>
+        </div>
+      </div>
+
+      <div class="tmpl-card">
+        <div class="tmpl-name">Final check-in</div>
+        <div class="tmpl-preview">Hi <span class="tmpl-var">{{name}}</span>, I wanted to send one final note on this. If the timing isn't right, no worries at all — just let me know either way.</div>
+        <div class="tmpl-actions">
+          <button class="tmpl-btn">Edit</button>
+          <button class="tmpl-btn">Duplicate</button>
+          <button class="tmpl-btn del">Delete</button>
+        </div>
+      </div>
+
+      <div class="tmpl-card">
+        <div class="tmpl-name">Partnership follow-up</div>
+        <div class="tmpl-preview">Hi <span class="tmpl-var">{{name}}</span>, circling back on the partnership proposal. Happy to adjust any terms — would love to find a time to connect.</div>
+        <div class="tmpl-actions">
+          <button class="tmpl-btn">Edit</button>
+          <button class="tmpl-btn">Duplicate</button>
+          <button class="tmpl-btn del">Delete</button>
+        </div>
+      </div>
+
+      <button class="new-tmpl-btn">+ Create new template</button>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="bnav-item" onclick="go('s-home')">
+        <div class="bnav-icon"><div class="bnav-lines"><div class="bnav-line" style="width:18px"></div><div class="bnav-line" style="width:13px"></div><div class="bnav-line" style="width:16px"></div></div></div>
+        <span>Feed</span>
+      </div>
+      <div class="bnav-item active" onclick="go('s-templates')">
+        <div class="bnav-icon"><div class="bnav-sq"></div></div>
+        <span>Templates</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .phone -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+let stepCount = 2;
+function addStep() {
+  stepCount++;
+  const c = document.getElementById('steps-container');
+  const div = document.createElement('div');
+  div.className = 'step-card';
+  div.style.marginTop = '10px';
+  const labels = ['','First','Second','Third','Fourth','Fifth'];
+  const label = labels[stepCount] || ('Follow-up ' + stepCount);
+  div.innerHTML = `
+    <div class="step-header">
+      <div class="step-num">${stepCount}</div>
+      <div class="step-title">${label} follow-up</div>
+      <span class="remove-lnk" onclick="removeStep(this)">Remove</span>
+    </div>
+    <div class="step-body">
+      <div>
+        <div class="field-label">Send after</div>
+        <div class="timing-row">
+          <input class="timing-input" type="number" value="14" min="1">
+          <select class="timing-select"><option>days</option><option>weeks</option></select>
+        </div>
+      </div>
+      <div>
+        <div class="field-label">Message</div>
+        <div class="source-toggle">
+          <button class="stoggle active">Use template</button>
+          <button class="stoggle" onclick="toggleSource(this)">Write custom</button>
+        </div>
+        <select class="template-select" style="margin-top:8px">
+          <option>Gentle nudge</option><option>Invoice reminder</option>
+          <option>Final check-in</option><option>Partnership follow-up</option>
+        </select>
+      </div>
+    </div>`;
+  c.appendChild(div);
+}
+
+function removeStep(el) {
+  el.closest('.step-card').remove();
+}
+
+function toggleSource(btn) {
+  const toggle = btn.closest('.source-toggle');
+  toggle.querySelectorAll('.stoggle').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const body = 

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /Users/jesseadjetey/Downloads/followr/src/app/api/threads/[id])",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(sed -i '' \"s|from ''@/lib/supabase''|from ''@/lib/supabase-server''|g\" \"$f\")",
+      "Bash(done)"
+    ]
+  }
+}

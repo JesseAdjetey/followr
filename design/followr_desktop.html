@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Followr — Desktop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #F2F1ED;
+    --surface:  #FFFFFF;
+    --surface2: #F7F6F2;
+    --border:   rgba(0,0,0,0.08);
+    --border2:  rgba(0,0,0,0.14);
+    --text:     #1A1814;
+    --muted:    #888580;
+    --hint:     #B8B5AE;
+    --accent:   #2563EB;
+    --accent-bg:#EEF4FF;
+    --green:    #16A34A;
+    --green-bg: #F0FDF4;
+    --red:      #DC2626;
+    --red-bg:   #FEF2F2;
+    --amber:    #D97706;
+    --amber-bg: #FFFBEB;
+    --radius:   12px;
+    --radius-sm:8px;
+    --font:     'DM Sans', sans-serif;
+    --mono:     'DM Mono', monospace;
+    --sidebar-w:240px;
+    --detail-w: 380px;
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── MAC CHROME ─────────────────────────────────── */
+  .mac-wrap {
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+    background: #2A2A2A;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .mac-titlebar {
+    height: 38px; min-height: 38px;
+    background: #3A3A3A;
+    display: flex; align-items: center;
+    padding: 0 14px; gap: 8px;
+    border-bottom: 1px solid #222;
+  }
+  .mac-btn {
+    width: 12px; height: 12px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .mac-btn.close  { background: #FF5F57; }
+  .mac-btn.min    { background: #FFBD2E; }
+  .mac-btn.expand { background: #28C840; }
+  .mac-title {
+    flex: 1; text-align: center; font-size: 12px;
+    color: #999; font-family: var(--font); font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── APP SHELL ───────────────────────────────────── */
+  .app {
+    flex: 1; display: flex; overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* ── SIDEBAR ─────────────────────────────────────── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-head {
+    padding: 22px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .app-name {
+    font-size: 20px; font-weight: 600; color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .cc-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 99px; padding: 3px 10px;
+    font-size: 11px; color: var(--muted); font-family: var(--mono);
+  }
+  .cc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label {
+    font-size: 10px; font-weight: 600; color: var(--hint);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 0 8px; margin-bottom: 4px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    cursor: pointer; color: var(--muted); font-size: 13px;
+    transition: background 0.12s, color 0.12s;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent); font-weight: 500; }
+  .nav-icon { width: 16px; height: 16px; flex-shrink: 0; display:flex;align-items:center;justify-content:center; }
+  .nav-badge {
+    margin-left: auto; font-size: 10px; font-weight: 600;
+    background: var(--red-bg); color: var(--red);
+    border-radius: 99px; padding: 1px 6px; min-width: 18px; text-align: center;
+  }
+  .nav-badge.blue { background: var(--accent-bg); color: var(--accent); }
+  .nav-badge.muted { background: var(--surface2); color: var(--hint); }
+
+  .sidebar-footer {
+    margin-top: auto; padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .settings-btn {
+    width: 100%; display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    color: var(--muted); font-size: 13px; cursor: pointer;
+    background: none; border: none; font-family: var(--font);
+    transition: background 0.12s;
+  }
+  .settings-btn:hover { background: var(--surface2); }
+
+  /* ── MAIN ────────────────────────────────────────── */
+  .main {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--bg);
+  }
+
+  .main-topbar {
+    padding: 18px 24px 0;
+    background: var(--bg);
+    display: flex; align-items: flex-start; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .main-title { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+  .main-sub   { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  .new-banner {
+    margin: 14px 24px 0;
+    background: var(--accent-bg);
+    border: 1px solid rgba(37,99,235,0.2);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 16px;
+    cursor: pointer; transition: border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .new-banner:hover { border-color: rgba(37,99,235,0.4); }
+  .banner-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .banner-text { flex: 1; }
+  .banner-title { font-size: 13px; font-weight: 600; color: var(--accent); }
+  .banner-sub   { font-size: 12px; color: #4B83DB; margin-top: 1px; }
+  .banner-cta {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--radius-sm); padding: 8px 16px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: var(--font); transition: opacity 0.15s; flex-shrink: 0;
+  }
+  .banner-cta:hover { opacity: 0.88; }
+
+  .filter-row {
+    display: flex; gap: 6px; padding: 14px 24px 0;
+    flex-shrink: 0; overflow-x: auto;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .ftab {
+    font-size: 12px; padding: 5px 14px; border-radius: 99px;
+    cursor: pointer; white-space: nowrap;
+    border: 1px solid var(--border2); color: var(--muted);
+    background: var(--surface); font-family: var(--font);
+    transition: all 0.12s;
+  }
+  .ftab:hover { border-color: var(--accent); color: var(--accent); }
+  .ftab.active {
+    background: var(--text); color: #fff;
+    border-color: var(--text); font-weight: 500;
+  }
+
+  .feed {
+    flex: 1; overflow-y: auto; padding: 14px 24px 24px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .feed::-webkit-scrollbar { width: 4px; }
+  .feed::-webkit-scrollbar-track { background: transparent; }
+  .feed::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .slabel {
+    font-size: 10px; font-weight: 600; color: var(--hint);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin: 12px 0 4px; padding-left: 2px;
+  }
+  .slabel:first-child { margin-top: 0; }
+
+  /* FEED CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 6px 12px;
+    transition: border-color 0.12s, box-shadow 0.12s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .card.red::before   { background: var(--red); }
+  .card.amber::before { background: var(--amber); }
+  .card.blue::before  { background: var(--accent); }
+  .card:hover { border-color: var(--border2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+
+  .card-left { grid-column: 1; display: flex; flex-direction: column; gap: 4px; }
+  .card-right { grid-column: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .card-subj { font-size: 13px; font-weight: 600; color: var(--text); }
+  .card-to   { font-size: 12px; color: var(--muted); }
+  .card-meta { display: flex; align-items: center; gap: 8px; }
+  .dots { display: flex; gap: 3px; align-items: center; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); }
+  .dot.g { background: var(--green); }
+  .dot.b { background: var(--accent); }
+  .chint { font-size: 11px; color: var(--hint); }
+
+  .pill { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; white-space: nowrap; }
+  .pill.r  { background: var(--red-bg);   color: var(--red); }
+  .pill.a  { background: var(--amber-bg); color: var(--amber); }
+  .pill.bl { background: var(--accent-bg); color: var(--accent); }
+  .pill.gr { background: var(--surface2); color: var(--hint); }
+
+  .mode-tag {
+    font-size: 10px; font-weight: 500; color: var(--hint);
+    background: var(--surface2); border-radius: 99px; padding: 2px 8px;
+    font-family: var(--mono);
+  }
+
+  /* ── DETAIL PANEL ────────────────────────────────── */
+  .detail-panel {
+    width: var(--detail-w);
+    min-width: var(--detail-w);
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  .detail-topbar {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .detail-subj { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .detail-to   { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .detail-pills { display: flex; gap: 6px; margin-top: 10px; }
+
+  .seq-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .sec-lbl {
+    font-size: 10px; font-weight: 600; color: var(--hint);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px;
+  }
+  .seq-track { display: flex; align-items: flex-start; }
+  .sstep  { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; }
+  .scircle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+  }
+  .scircle.done { background: var(--green-bg); color: var(--green); }
+  .scircle.act  { background: var(--accent-bg); color: var(--accent); border: 2px solid var(--accent); }
+  .scircle.pend { background: var(--surface2); color: var(--hint); }
+  .sline { flex: 1; height: 1px; background: var(--border2); margin-top: 16px; }
+  .sline.done { background: var(--green); }
+  .sdate   { font-size: 10px; color: var(--hint); text-align: center; font-family: var(--mono); }
+  .sstatus { font-size: 10px; color: var(--hint); text-align: center; font-weight: 500; }
+  .sstatus.act  { color: var(--accent); }
+  .sstatus.done { color: var(--green); }
+
+  .cbar {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+  }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--accent-bg); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: var(--accent);
+    flex-shrink: 0;
+  }
+  .cname  { font-size: 13px; font-weight: 600; color: var(--text); }
+  .cemail { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .cbar-actions { margin-left: auto; display: flex; gap: 6px; }
+  .action-btn {
+    font-size: 11px; color: var(--muted); background: var(--surface2);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 5px 10px; cursor: pointer; font-family: var(--font);
+    transition: all 0.12s;
+  }
+  .action-btn:hover { border-color: var(--border2); color: var(--text); }
+
+  .thread {
+    flex: 1; overflow-y: auto; padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .thread::-webkit-scrollbar { width: 4px; }
+  .thread::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .msg { display: flex; flex-direction: column; gap: 4px; }
+  .msg.out { align-items: flex-end; }
+  .mmeta { display: flex; align-items: center; gap: 6px; }
+  .mfrom { font-size: 11px; font-weight: 500; color: var(--muted); }
+  .mdate { font-size: 10px; color: var(--hint); font-family: var(--mono); }
+  .mbubble {
+    font-size: 12px; line-height: 1.65; border-radius: var(--radius);
+    padding: 10px 14px; max-width: 92%; color: var(--text);
+    background: var(--surface2);
+  }
+  .mbubble.out   { background: var(--accent-bg); color: #1E40AF; }
+  .mbubble.ghost {
+    background: transparent; border: 1px dashed var(--border2);
+    color: var(--muted); font-style: italic;
+  }
+  .ghost-tag {
+    font-size: 10px; color: var(--accent); font-weight: 600;
+    margin-bottom: 3px; display: flex; align-items: center; gap: 5px;
+    font-family: var(--mono);
+  }
+  .ghost-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  .msg-actions { display: flex; gap: 10px; margin-top: 3px; }
+  .msg-action-link { font-size: 11px; color: var(--accent); cursor: pointer; }
+  .msg-action-link.green { color: var(--green); font-weight: 600; }
+  .divline { display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+  .divline-l { flex: 1; height: 1px; background: var(--border); }
+  .divline-t { font-size: 10px; color: var(--hint); white-space: nowrap; font-family: var(--mono); }
+
+  /* ── SETUP MODAL ─────────────────────────────────── */
+  .modal-overlay {
+    display: none;
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    width: 560px;
+    max-height: 82vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  }
+  .modal-head {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--surface2); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 16px; line-height: 1;
+    font-family: var(--font); transition: background 0.12s;
+  }
+  .modal-close:hover { background: var(--border2); }
+  .modal-body {
+    flex: 1; overflow-y: auto; padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .modal-body::-webkit-scrollbar { width: 4px; }
+  .modal-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+  .modal-foot {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 10px; justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .email-preview {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+  }
+  .ep-subj { font-size: 14px; font-weight: 600; color: var(--text); }
+  .ep-from { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
+  .ep-body {
+    font-size: 12px; color: var(--muted); margin-top: 10px;
+    line-height: 1.6; border-top: 1px solid var(--border); padding-top: 10px;
+  }
+
+  .mode-row {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .mode-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .mode-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .toggle-wrap { display: flex; background: var(--border); border-radius: var(--radius-sm); padding: 2px; }
+  .toggle-opt {
+    font-size: 12px; padding: 5px 12px; border-radius: 6px;
+    cursor: pointer; color: var(--muted); background: transparent;
+    border: none; font-family: var(--font); font-weight: 500; transition: all 0.12s;
+  }
+  .toggle-opt.active { background: var(--surface); color: var(--text); }
+
+  .step-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--border); background: var(--surface2);
+  }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--muted);
+  }
+  .step-title { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+  .remove-lnk { font-size: 12px; color: var(--hint); cursor: pointer; transition: color 0.12s; }
+  .remove-lnk:hover { color: var(--red); }
+  .step-body {
+    padding: 14px 16px; display: flex; gap: 16px;
+  }
+  .step-col { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .field-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .timing-row { display: flex; gap: 8px; }
+  .timing-input {
+    width: 70px; padding: 7px 10px;
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    font-size: 13px; color: var(--text); background: var(--surface);
+    font-family: var(--font); outline: none;
+  }
+  .timing-input:focus { border-color: var(--accent); }
+  .timing-select {
+    flex: 1; padding: 7px 10px;
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    font-size: 13px; color: var(--text); background: var(--surface);
+    font-family: var(--font); outline: none;
+  }
+  .source-toggle {
+    display: flex; border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); overflow: hidden;
+  }
+  .stoggle {
+    flex: 1; padding: 7px 8px; font-size: 12px; text-align: center;
+    cursor: pointer; color: var(--muted); background: transparent;
+    border: none; font-family: var(--font); font-weight: 500; transition: all 0.12s;
+  }
+  .stoggle.active { background: var(--text); color: #fff; }
+  .template-select {
+    width: 100%; padding: 7px 10px; margin-top: 8px;
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    font-size: 12px; color: var(--text); background: var(--surface);
+    font-family: var(--font); outline: none;
+  }
+  .mini-textarea {
+    width: 100%; padding: 8px 10px; margin-top: 8px;
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    font-size: 12px; color: var(--text); background: var(--surface);
+    resize: none; line-height: 1.5; font-family: var(--font); outline: none;
+  }
+  .mini-textarea:focus, .template-select:focus, .timing-select:focus { border-color: var(--accent); }
+
+  .add-step-btn {
+    border: 1.5px dashed var(--border2); border-radius: var(--radius);
+    padding: 13px; text-align: center; font-size: 13px; color: var(--muted);
+    cursor: pointer; background: transparent; width: 100%; font-family: var(--font);
+    transition: all 0.12s;
+  }
+  .add-step-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+
+  .btn-primary {
+    background: var(--text); color: #fff; border: none;
+    border-radius: var(--radius-sm); padding: 9px 20px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: var(--font); transition: opacity 0.12s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ghost {
+    background: transparent; border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 9px 16px;
+    font-size: 13px; color: var(--muted); cursor: pointer; font-family: var(--font);
+    transition: all 0.12s;
+  }
+  .btn-ghost:hover { border-color: var(--border); color: var(--text); }
+
+  /* ── TEMPLATES VIEW ──────────────────────────────── */
+  .templates-view {
+    display: none; flex: 1; overflow-y: auto; padding: 24px;
+    flex-direction: column; gap: 12px;
+  }
+  .templates-view.active { display: flex; }
+  .feed-view { display: flex; flex: 1; overflow: hidden; }
+  .feed-view.hidden { display: none; }
+
+  .tmpl-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .tmpl-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: border-color 0.12s;
+  }
+  .tmpl-card:hover { border-color: var(--border2); }
+  .tmpl-name    { font-size: 14px; font-weight: 600; color: var(--text); }
+  .tmpl-preview { font-size: 12px; color: var(--muted); line-height: 1.6; flex: 1; }
+  .tmpl-var     { color: var(--accent); font-weight: 500; font-family: var(--mono); }
+  .tmpl-actions { display: flex; gap: 6px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .tmpl-btn {
+    font-size: 11px; color: var(--muted); background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 10px; cursor: pointer; font-family: var(--font); transition: all 0.12s;
+  }
+  .tmpl-btn:hover { border-color: var(--border2); color: var(--text); }
+  .tmpl-btn.del:hover { color: var(--red); border-color: var(--red-bg); }
+  .new-tmpl-card {
+    background: transparent; border: 1.5px dashed var(--border2);
+    border-radius: var(--radius); padding: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--muted); cursor: pointer; min-height: 120px;
+    transition: all 0.12s;
+  }
+  .new-tmpl-card:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+
+  /* SVG ICONS */
+  .icon { width:16px;height:16px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round; }
+</style>
+</head>
+<body>
+
+<div class="mac-wrap">
+  <!-- Title bar -->
+  <div class="mac-titlebar">
+    <div class="mac-btn close"></div>
+    <div class="mac-btn min"></div>
+    <div class="mac-btn expand"></div>
+    <div class="mac-title">Followr</div>
+  </div>
+
+  <!-- App -->
+  <div class="app" style="position:relative">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-head">
+        <div class="app-name">Followr</div>
+        <div class="cc-pill"><div class="cc-dot"></div><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7c1a131010130b090c3c1d1f1119521f1311">[email&#160;protected]</a></div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Inbox</div>
+        <div class="nav-item" onclick="setNav(this,'overdue')" style="color:var(--red)">
+          <svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="8.5"/><circle cx="8" cy="10.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+          Overdue
+          <div class="nav-badge">2</div>
+        </div>
+        <div class="nav-item active" onclick="setNav(this,'all')">
+          <svg class="icon" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><line x1="1.5" y1="6" x2="14.5" y2="6"/></svg>
+          All threads
+          <div class="nav-badge blue">11</div>
+        </div>
+        <div class="nav-item" onclick="setNav(this,'today')">
+          <svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><polyline points="8,4.5 8,8 10.5,9.5"/></svg>
+          Due today
+          <div class="nav-badge muted">3</div>
+        </div>
+        <div class="nav-item" onclick="setNav(this,'week')">
+          <svg class="icon" viewBox="0 0 16 16"><polyline points="1.5,12 5.5,7.5 8.5,10 14.5,4"/></svg>
+          This week
+          <div class="nav-badge muted">6</div>
+        </div>
+        <div class="nav-item" onclick="setNav(this,'replied')">
+          <svg class="icon" viewBox="0 0 16 16"><polyline points="2,8 6,4 6,7 14,7 14,11 6,11 6,14"/></svg>
+          Replied
+          <div class="nav-badge muted">4</div>
+        </div>
+      </div>
+
+      <div class="nav-section" style="border-top:1px solid var(--border);margin-top:4px;padding-top:16px">
+        <div class="nav-label">Library</div>
+        <div class="nav-item" onclick="showTemplates()">
+          <svg class="icon" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="5" y1="5.5" x2="11" y2="5.5"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="10.5" x2="8.5" y2="10.5"/></svg>
+          Templates
+          <div class="nav-badge muted">4</div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="settings-btn">
+          <svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v1.2M8 13.3v1.2M1.5 8h1.2M13.3 8h1.2M3.4 3.4l.85.85M11.75 11.75l.85.85M3.4 12.6l.85-.85M11.75 4.25l.85-.85"/></svg>
+          Settings
+        </button>
+      </div>
+    </div>
+
+    <!-- FEED + DETAIL -->
+    <div class="feed-view" id="feed-view">
+      <!-- MAIN FEED -->
+      <div class="main">
+        <div class="main-topbar">
+          <div>
+            <div class="main-title">All threads</div>
+            <div class="main-sub">11 active · 2 need your attention</div>
+          </div>
+        </div>
+
+        <div class="new-banner" onclick="openSetup()">
+          <div class="banner-dot"></div>
+          <div class="banner-text">
+            <div class="banner-title">New email detected — Q4 partnership proposal</div>
+            <div class="banner-sub">James Osei · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="80eae1ede5f3c0f6e5eef4f5f2e5aee3ef">[email&#160;protected]</a> · just now — tap to configure follow-ups</div>
+          </div>
+          <button class="banner-cta">Set up follow-ups</button>
+        </div>
+
+        <div class="filter-row">
+          <button class="ftab active">All</button>
+          <button class="ftab">Overdue</button>
+          <button class="ftab">Due today</button>
+          <button class="ftab">This week</button>
+          <button class="ftab">Replied</button>
+        </div>
+
+        <div class="feed">
+          <div class="slabel">Overdue</div>
+
+          <div class="card red selected" onclick="selectCard(this)">
+            <div class="card-left">
+              <div class="card-subj">Dev contract — signature needed</div>
+              <div class="card-to">Amara Diallo · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="95f4f8f4e7f4d5e1f0f6fdf6fae7e5bbfcfa">[email&#160;protected]</a></div>
+              <div class="card-meta">
+                <div class="dots"><div class="dot g"></div><div class="dot b"></div><div class="dot"></div></div>
+                <div class="chint">Follow-up 2 of 3</div>
+                <div class="mode-tag">approval</div>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="pill r">1 day overdue</div>
+            </div>
+          </div>
+
+          <div class="card red" onclick="selectCard(this)">
+            <div class="card-left">
+              <div class="card-subj">Q4 budget sign-off</div>
+              <div class="card-to">Finance · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3556535a75545658501b565a58">[email&#160;protected]</a></div>
+              <div class="card-meta">
+                <div class="dots"><div class="dot g"></div><div class="dot g"></div><div class="dot b"></div><div class="dot"></div></div>
+                <div class="chint">Follow-up 3 of 4</div>
+                <div class="mode-tag">approval</div>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="pill r">2 days overdue</div>
+            </div>
+          </div>
+
+          <div class="slabel">Due today</div>
+
+          <div class="card amber" onclick="selectCard(this)">
+            <div class="card-left">
+              <div class="card-subj">Invoice #1042 outstanding</div>
+              <div class="card-to">Finance · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b0d2d9dcdcd9ded7f0d3dcd9d5dec49ed3dfdd">[email&#160;protected]</a></div>
+              <div class="card-meta">
+                <div class="dots"><div class="dot b"></div><div class="dot"></div><div class="dot"></div></div>
+                <div class="chint">Follow-up 1 of 3</div>
+                <div class="mode-tag">auto</div>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="pill a">Due today</div>
+            </div>
+          </div>
+
+          <div class="card amber" onclick="selectCard(this)">
+            <div class="card-left">
+              <div class="card-subj">Intro call scheduling</div>
+              <div class="card-to">Kwame Mensah · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="98f3eff9f5fdd8fef7edf6fcfdeaebb6fff0">[email&#160;protected]</a></div>
+              <div class="card-meta">
+                <div class="dots"><div class="dot g"></div><div class="dot b"></div><div class="dot"></div></div>
+                <div class="chint">Follow-up 2 of 3</div>
+                <div class="mode-tag">auto</div>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="pill a">Due today</div>
+            </div>
+          </div>
+
+          <div class="slabel">This week</div>
+
+          <div class="card blue" onclick="selectCard(this)">
+            <div class="card-left">
+              <div class="card-subj">SaaS renewal discussion</div>
+              <div class="card-to">Remi Adeyemi · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d8aabdb5b198bbb4b7adbcf6b6bf">[email&#160;protected]</a></div>
+              <div class="card-meta">
+                <div class="dots"><div class="dot b"></div><div class="dot"></div></div>
+                <div class="chint">Follow-up 1 of 2</div>
+                <div class="mode-tag">auto</div>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="pill bl">In 3 days</div>
+            </div>
+          </div>
+
+          <div class="card blue" onclick="selectCard(this)">
+            <div class="card-left">
+              <div class="card-subj">Feedback on design brief</div>
+              <div class="card-to">Sarah Kim · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7f0c511416123f0c0b0a1b1610511c10">[email&#160;protected]</a></div>
+              <div class="card-meta">
+                <div class="dots"><div class="dot g"></div><div class="dot b"></div><div class="dot"></div></div>
+                <div class="chint">Follow-up 2 of 3</div>
+                <div class="mode-tag">auto</div>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="pill bl">In 5 days</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DETAIL PANEL -->
+      <div class="detail-panel">
+        <div class="detail-topbar">
+          <div class="detail-subj">Dev contract — signature needed</div>
+          <div class="detail-to"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="81e0ece0f3e0c1f5e4e2e9e2eef3f1afe8ee">[email&#160;protected]</a></div>
+          <div class="detail-pills">
+            <div class="pill r">1 day overdue</div>
+            <div class="mode-tag">needs approval</div>
+          </div>
+        </div>
+
+        <div class="seq-section">
+          <div class="sec-lbl">Follow-up sequence</div>
+          <div class="seq-track">
+            <div class="sstep"><div class="scircle done">1</div><div class="sdate">Mar 8</div><div class="sstatus done">Sent</div></div>
+            <div class="sline done"></div>
+            <div class="sstep"><div class="scircle act">2</div><div class="sdate">Mar 14</div><div class="sstatus act">Overdue</div></div>
+            <div class="sline"></div>
+            <div class="sstep"><div class="scircle pend">3</div><div class="sdate">Mar 21</div><div class="sstatus">Pending</div></div>
+          </div>
+        </div>
+
+        <div class="cbar">
+          <div class="avatar">AD</div>
+          <div><div class="cname">Amara Diallo</div><div class="cemail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1f7e727e6d7e5f6b7a7c777c706d6f317670">[email&#160;protected]</a></div></div>
+          <div class="cbar-actions">
+            <button class="action-btn">Snooze</button>
+            <button class="action-btn">Stop</button>
+          </div>
+        </div>
+
+        <div class="thread">
+          <div class="msg out">
+            <div class="mmeta"><div class="mfrom">You</div><div class="mdate">Mar 8</div></div>
+            <div class="mbubble out">Hi Amara, following up on the dev contract — please let me know when you're ready to sign so we can get started.</div>
+          </div>
+
+          <div class="divline">
+            <div class="divline-l"></div>
+            <div class="divline-t">now · overdue by 1 day</div>
+            <div class="divline-l"></div>
+          </div>
+
+          <div class="msg out">
+            <div class="ghost-tag"><div class="ghost-dot"></div>follow-up 2 · needs approval · overdue</div>
+            <div class="mbubble ghost">Hi Amara, bumping this up — happy to answer any questions before you sign. Let me know!</div>
+            <div class="msg-actions">
+              <div class="msg-action-link">Edit first ›</div>
+              <div class="msg-action-link green">Approve & send ›</div>
+            </div>
+          </div>
+
+          <div class="msg out">
+            <div class="ghost-tag"><div class="ghost-dot"></div>follow-up 3 · auto · Mar 21</div>
+            <div class="mbubble ghost">Final nudge on the contract — let me know either way and I'll update things on our end.</div>
+            <div class="msg-actions">
+              <div class="msg-action-link">Edit before sending ›</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEMPLATES VIEW -->
+    <div class="templates-view" id="templates-view">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-shrink:0">
+        <div>
+          <div class="main-title">Templates</div>
+          <div class="main-sub">Reusable messages for your follow-up sequences</div>
+        </div>
+        <button class="btn-primary">+ New template</button>
+      </div>
+      <div class="tmpl-grid">
+        <div class="tmpl-card">
+          <div class="tmpl-name">Gentle nudge</div>
+          <div class="tmpl-preview">Hi <span class="tmpl-var">{{name}}</span>, just following up on my previous message — wanted to make sure it didn't get buried. Let me know your thoughts!</div>
+          <div class="tmpl-actions">
+            <button class="tmpl-btn">Edit</button>
+            <button class="tmpl-btn">Duplicate</button>
+            <button class="tmpl-btn del">Delete</button>
+          </div>
+        </div>
+        <div class="tmpl-card">
+          <div class="tmpl-name">Invoice reminder</div>
+          <div class="tmpl-preview">Hi <span class="tmpl-var">{{name}}</span>, friendly reminder that invoice <span class="tmpl-var">{{invoice}}</span> is outstanding. Please let me know if you have any questions.</div>
+          <div class="tmpl-actions">
+            <button class="tmpl-btn">Edit</button>
+            <button class="tmpl-btn">Duplicate</button>
+            <button class="tmpl-btn del">Delete</button>
+          </div>
+        </div>
+        <div class="tmpl-card">
+          <div class="tmpl-name">Final check-in</div>
+          <div class="tmpl-preview">Hi <span class="tmpl-var">{{name}}</span>, one final note — if timing isn't right, no worries at all. Just let me know either way and I'll close this out.</div>
+          <div class="tmpl-actions">
+            <button class="tmpl-btn">Edit</button>
+            <button class="tmpl-btn">Duplicate</button>
+            <button class="tmpl-btn del">Delete</button>
+          </div>
+        </div>
+        <div class="tmpl-card">
+          <div class="tmpl-name">Partnership follow-up</div>
+          <div class="tmpl-preview">Hi <span class="tmpl-var">{{name}}</span>, circling back on the partnership proposal. Happy to adjust terms — would love to find a time to connect.</div>
+          <div class="tmpl-actions">
+            <button class="tmpl-btn">Edit</button>
+            <button class="tmpl-btn">Duplicate</button>
+            <button class="tmpl-btn del">Delete</button>
+          </div>
+        </div>
+        <div class="new-tmpl-card">+ Create new template</div>
+      </div>
+    </div>
+
+    <!-- SETUP MODAL -->
+    <div class="modal-overlay" id="setup-modal">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title">Set up follow-ups</div>
+          <button class="modal-close" onclick="closeSetup()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="email-preview">
+            <div class="ep-subj">Q4 partnership proposal</div>
+            <div class="ep-from">James Osei · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="711b101c14023107141f050403145f121e">[email&#160;protected]</a> · Mar 19, 2026</div>
+            <div class="ep-body">Hi, I wanted to reach out regarding a potential Q4 partnership opportunity. Please find the attached proposal and let me know your thoughts...</div>
+          </div>
+
+          <div class="mode-row">
+            <div>
+              <div class="mode-label">Send mode</div>
+              <div class="mode-sub">Override your global default for this thread</div>
+            </div>
+            <div class="toggle-wrap">
+              <button class="toggle-opt" onclick="toggleMode(this)">Auto-send</button>
+              <button class="toggle-opt active" onclick="toggleMode(this)">Needs approval</button>
+            </div>
+          </div>
+
+          <div id="modal-steps">
+            <div class="step-card">
+              <div class="step-header">
+                <div class="step-num">1</div>
+                <div class="step-title">First follow-up</div>
+                <span class="remove-lnk" onclick="removeStep(this)">Remove</span>
+              </div>
+              <div class="step-body">
+                <div class="step-col">
+                  <div class="field-label">Send after</div>
+                  <div class="timing-row">
+                    <input class="timing-input" type="number" value="3" min="1">
+                    <select class="timing-select"><option>days</option><option>weeks</option></select>
+                  </div>
+                </div>
+                <div class="step-col">
+                  <div class="field-label">Message</div>
+                  <div class="source-toggle">
+                    <button class="stoggle active">Template</button>
+                    <button class="stoggle" onclick="toggleSource(this)">Custom</button>
+                  </div>
+                  <select class="template-select">
+                    <option>Gentle nudge</option><option>Invoice reminder</option>
+                    <option>Final check-in</option><option>Partnership follow-up</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-card" style="margin-top:10px">
+              <div class="step-header">
+                <div class="step-num">2</div>
+                <div class="step-title">Second follow-up</div>
+                <span class="remove-lnk" onclick="removeStep(this)">Remove</span>
+              </div>
+              <div class="step-body">
+                <div class="step-col">
+                  <div class="field-label">Send after</div>
+                  <div class="timing-row">
+                    <input class="timing-input" type="number" value="7" min="1">
+                    <select class="timing-select"><option>days</option><option>weeks</option></select>
+                  </div>
+                </div>
+                <div class="step-col">
+                  <div class="field-label">Message</div>
+                  <div class="source-toggle">
+                    <button class="stoggle" onclick="toggleSource(this)">Template</button>
+                    <button class="stoggle active">Custom</button>
+                  </div>
+                  <textarea class="mini-textarea" rows="3">Hi James, checking in again on the Q4 proposal — happy to jump on a quick call if easier.</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="add-step-btn" onclick="addModalStep()">+ Add another follow-up step</button>
+        </div>
+        <div class="modal-foot">
+          <button class="btn-ghost" onclick="closeSetup()">Skip for now</button>
+          <button class="btn-primary" onclick="closeSetup()">Activate follow-ups</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .app -->
+</div><!-- .mac-wrap -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function selectCard(el) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function setNav(el, view) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  if (view === 'templates') { showTemplates(); return; }
+  document.getElementById('feed-view').classList.remove('hidden');
+  document.getElementById('templates-view').classList.remove('active');
+}
+
+function showTemplates() {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => { if(n.textContent.trim().startsWith('Templates')) n.classList.add('active'); });
+  document.getElementById('feed-view').classList.add('hidden');
+  document.getElementById('templates-view').classList.add('active');
+}
+
+function openSetup() {
+  document.getElementById('setup-modal').classList.add('open');
+}
+function closeSetup() {
+  document.getElementById('setup-modal').classList.remove('open');
+}
+
+let mStepCount = 2;
+function addModalStep() {
+  mStepCount++;
+  const labels = ['','First','Second','Third','Fourth','Fifth'];
+  const label = (labels[mStepCount] || ('Follow-up ' + mStepCount)) + ' follow-up';
+  const div = document.createElement('div');
+  div.className = 'step-card';
+  div.style.marginTop = '10px';
+  div.innerHTML = `<div class="step-header"><div class="step-num">${mStepCount}</div><div class="step-title">${label}</div><span class="remove-lnk" onclick="removeStep(this)">Remove</span></div><div class="step-body"><div class="step-col"><div class="field-label">Send after</div><div class="timing-row"><input class="timing-input" type="number" value="14" min="1"><select class="timing-select"><option>days</option><option>weeks</option></select></div></div><div class="step-col"><div class="field-label">Message</div><div class="source-toggle"><button class="stoggle active">Template</button><button class="stoggle" onclick="toggleSource(this)">Custom</button></div><select class="template-select" style="margin-top:
