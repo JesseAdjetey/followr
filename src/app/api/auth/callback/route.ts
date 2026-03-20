@@ -7,12 +7,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const error = searchParams.get('error')
 
+  // Use the configured app URL so Vercel internal routing doesn't resolve to localhost
+  const base = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
+
   if (error || !code) {
-    return NextResponse.redirect(`${origin}/auth/signin?error=oauth_failed`)
+    return NextResponse.redirect(`${base}/auth/signin?error=oauth_failed`)
   }
 
   const supabase = createServerSupabaseClient()
@@ -22,12 +25,12 @@ export async function GET(request: NextRequest) {
 
   if (sessionError || !data.session) {
     console.error('Session exchange error:', sessionError)
-    return NextResponse.redirect(`${origin}/auth/signin?error=session_failed`)
+    return NextResponse.redirect(`${base}/auth/signin?error=session_failed`)
   }
 
   const user = data.session.user
-  const providerToken = data.session.provider_token        // Google access token
-  const providerRefreshToken = data.session.provider_refresh_token // Google refresh token
+  const providerToken = data.session.provider_token
+  const providerRefreshToken = data.session.provider_refresh_token
 
   // Save Gmail tokens to settings table
   if (providerToken || providerRefreshToken) {
@@ -35,9 +38,9 @@ export async function GET(request: NextRequest) {
       user_id: user.id,
       gmail_access_token: providerToken ?? null,
       gmail_refresh_token: providerRefreshToken ?? null,
-      gmail_token_expiry: null, // Supabase manages token expiry
+      gmail_token_expiry: null,
     }, { onConflict: 'user_id' })
   }
 
-  return NextResponse.redirect(`${origin}/`)
+  return NextResponse.redirect(`${base}/`)
 }
