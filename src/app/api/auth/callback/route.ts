@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error')
 
   // Use the configured app URL so Vercel internal routing doesn't resolve to localhost
-  const base = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
+  const base = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
 
   if (error || !code) {
     return NextResponse.redirect(`${base}/auth/signin?error=oauth_failed`)
