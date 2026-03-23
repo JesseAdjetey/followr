@@ -5,8 +5,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { sendReply, substituteVariables } from '@/lib/gmail'
 
+export async function GET(req: NextRequest) {
+  return POST(req)
+}
+
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get('x-cron-secret')
+  const authHeader = req.headers.get('authorization')
+  const secret = authHeader?.replace('Bearer ', '') ?? req.headers.get('x-cron-secret')
   if (secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

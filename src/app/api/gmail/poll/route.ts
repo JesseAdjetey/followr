@@ -8,7 +8,8 @@ import { google } from 'googleapis'
 import { getAuthenticatedClient } from '@/lib/gmail'
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-cron-secret')
+  const authHeader = req.headers.get('authorization')
+  const secret = authHeader?.replace('Bearer ', '') ?? req.headers.get('x-cron-secret')
   if (process.env.NODE_ENV === 'production' && secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
