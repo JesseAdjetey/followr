@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/auth') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/gmail/webhook') ||
+    pathname.startsWith('/api/gmail/poll') ||
     pathname.startsWith('/api/cron')
   ) {
     return NextResponse.next()
