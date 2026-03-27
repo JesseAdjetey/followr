@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
             status: threadStatus,
             send_mode: autoSendMode,
           }, { onConflict: 'user_id,gmail_thread_id', ignoreDuplicates: true })
-          .select('id, email_date')
+          .select('id, email_date, status')
           .single()
 
         // For duplicate threads (ignoreDuplicates), fetch the existing row
