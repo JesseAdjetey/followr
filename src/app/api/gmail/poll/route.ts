@@ -11,7 +11,9 @@ import type { StepDraft } from '@/types'
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
-  const secret = authHeader?.replace('Bearer ', '') ?? req.headers.get('x-cron-secret')
+  const secret = authHeader?.replace('Bearer ', '').trim()
+    ?? req.headers.get('x-cron-secret')
+    ?? new URL(req.url).searchParams.get('secret')
   if (process.env.NODE_ENV === 'production' && secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

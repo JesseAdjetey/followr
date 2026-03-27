@@ -11,7 +11,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
-  const secret = authHeader?.replace('Bearer ', '') ?? req.headers.get('x-cron-secret')
+  const secret = authHeader?.replace('Bearer ', '').trim()
+    ?? req.headers.get('x-cron-secret')
+    ?? new URL(req.url).searchParams.get('secret')
   if (secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
