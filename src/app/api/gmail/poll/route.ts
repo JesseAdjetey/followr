@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
           ? (autoSendMode === 'auto_send' ? 'waiting' : 'needs_approval')
           : 'pending_setup'
 
-        // Upsert thread — only insert if not already tracked
+        // Try to insert new thread
         const { data: upserted, error } = await supabase
           .from('threads')
           .upsert({
@@ -81,22 +81,31 @@ export async function GET(req: NextRequest) {
           .select('id, email_date')
           .single()
 
-        if (error || !upserted) continue
+        // For duplicate threads (ignoreDuplicates), fetch the existing row
+        const thread = upserted ?? (await supabase
+          .from('threads')
+          .select('id, email_date, status')
+          .eq('user_id', s.user_id)
+          .eq('gmail_thread_id', msg.threadId)
+          .single()
+        ).data
+
+        if (!thread) continue
         newCount++
 
-        // Auto-create steps if enabled and this is a fresh insert
-        if (canAutoActivate) {
+        // Auto-activate: applies to fresh inserts AND existing pending_setup threads
+        if (canAutoActivate && (upserted || thread.status === 'pending_setup')) {
           const { count } = await supabase
             .from('steps')
             .select('id', { count: 'exact', head: true })
-            .eq('thread_id', upserted.id)
+            .eq('thread_id', thread.id)
 
           if ((count ?? 0) === 0) {
-            const threadDate = new Date(upserted.email_date)
+            const threadDate = new Date(thread.email_date)
             const scheduledDates = computeScheduledDates(threadDate, autoSteps)
 
             const stepRows = autoSteps.map((step, i) => ({
-              thread_id: upserted.id,
+              thread_id: thread.id,
               user_id: s.user_id,
               step_number: i + 1,
               send_after_days: step.time_unit === 'weeks' ? step.send_after_days * 7 : step.send_after_days,
@@ -108,6 +117,10 @@ export async function GET(req: NextRequest) {
             }))
 
             await supabase.from('steps').insert(stepRows)
+            await supabase
+              .from('threads')
+              .update({ status: threadStatus, send_mode: autoSendMode })
+              .eq('id', thread.id)
           }
         }
       }
