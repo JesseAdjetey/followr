@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
         newCount++
 
         // Auto-activate: applies to fresh inserts AND existing pending_setup threads
-        if (canAutoActivate && (upserted || thread.status === 'pending_setup')) {
+        if (canAutoActivate && thread) {
           const { count } = await supabase
             .from('steps')
             .select('id', { count: 'exact', head: true })
