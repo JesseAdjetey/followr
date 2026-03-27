@@ -174,5 +174,12 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, results, polledAt: new Date().toISOString() })
+  const debug = (settings ?? []).map(s => ({
+    user_id: s.user_id,
+    auto_followup_enabled: s.auto_followup_enabled,
+    auto_followup_steps_count: (s.auto_followup_steps ?? []).length,
+    auto_followup_steps: s.auto_followup_steps,
+  }))
+
+  return NextResponse.json({ ok: true, results, debug, polledAt: new Date().toISOString() })
 }
