@@ -6,6 +6,8 @@ import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getGmailClient, getMessage, isWatchedAddressCCd, isReplyFromRecipient, extractEmail, extractName } from '@/lib/gmail'
 import { google } from 'googleapis'
 import { getAuthenticatedClient } from '@/lib/gmail'
+import { computeScheduledDates } from '@/lib/sequence'
+import type { StepDraft } from '@/types'
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -19,7 +21,7 @@ export async function GET(req: NextRequest) {
   // Get all users with Gmail connected and a watched CC address
   const { data: settings } = await supabase
     .from('settings')
-    .select('user_id, watched_cc_address, gmail_access_token, gmail_refresh_token, gmail_history_id')
+    .select('user_id, watched_cc_address, gmail_access_token, gmail_refresh_token, gmail_history_id, auto_followup_enabled, auto_followup_send_mode, auto_followup_steps')
     .not('gmail_refresh_token', 'is', null)
     .not('watched_cc_address', 'eq', '')
 
@@ -46,8 +48,21 @@ export async function GET(req: NextRequest) {
         const msg = await getMessage(s.user_id, messageId)
         if (!msg) continue
 
-        if (isWatchedAddressCCd(msg.cc, s.watched_cc_address)) {
-          const { error } = await supabase.from('threads').upsert({
+        if (!isWatchedAddressCCd(msg.cc, s.watched_cc_address)) continue
+
+        const autoEnabled = s.auto_followup_enabled
+        const autoSteps: StepDraft[] = s.auto_followup_steps ?? []
+        const autoSendMode: string = s.auto_followup_send_mode ?? 'auto_send'
+        const canAutoActivate = autoEnabled && autoSteps.length > 0
+
+        const threadStatus = canAutoActivate
+          ? (autoSendMode === 'auto_send' ? 'waiting' : 'needs_approval')
+          : 'pending_setup'
+
+        // Upsert thread — only insert if not already tracked
+        const { data: upserted, error } = await supabase
+          .from('threads')
+          .upsert({
             user_id: s.user_id,
             gmail_thread_id: msg.threadId,
             gmail_message_id: msg.id,
@@ -58,10 +73,40 @@ export async function GET(req: NextRequest) {
             sender_email: extractEmail(msg.from),
             email_snippet: msg.snippet,
             email_date: new Date(msg.date).toISOString(),
-            status: 'pending_setup',
+            status: threadStatus,
+            send_mode: autoSendMode,
           }, { onConflict: 'user_id,gmail_thread_id', ignoreDuplicates: true })
+          .select('id, email_date')
+          .single()
 
-          if (!error) newCount++
+        if (error || !upserted) continue
+        newCount++
+
+        // Auto-create steps if enabled and this is a fresh insert
+        if (canAutoActivate) {
+          const { count } = await supabase
+            .from('steps')
+            .select('id', { count: 'exact', head: true })
+            .eq('thread_id', upserted.id)
+
+          if ((count ?? 0) === 0) {
+            const threadDate = new Date(upserted.email_date)
+            const scheduledDates = computeScheduledDates(threadDate, autoSteps)
+
+            const stepRows = autoSteps.map((step, i) => ({
+              thread_id: upserted.id,
+              user_id: s.user_id,
+              step_number: i + 1,
+              send_after_days: step.time_unit === 'weeks' ? step.send_after_days * 7 : step.send_after_days,
+              scheduled_at: scheduledDates[i].toISOString(),
+              message_source: step.message_source,
+              template_id: step.template_id ?? null,
+              custom_body: step.custom_body || null,
+              status: 'pending',
+            }))
+
+            await supabase.from('steps').insert(stepRows)
+          }
         }
       }
 

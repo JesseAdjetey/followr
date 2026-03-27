@@ -1,11 +1,15 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import type { StepDraft } from '@/types'
 
 export interface UserSettings {
   watched_cc_address: string
   default_send_mode: 'auto_send' | 'requires_approval'
   notifications_enabled: boolean
+  auto_followup_enabled: boolean
+  auto_followup_send_mode: 'auto_send' | 'requires_approval'
+  auto_followup_steps: StepDraft[]
 }
 
 export function useSettings() {

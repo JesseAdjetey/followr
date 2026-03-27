@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
+const SETTINGS_FIELDS = 'watched_cc_address, default_send_mode, notifications_enabled, auto_followup_enabled, auto_followup_send_mode, auto_followup_steps'
+
 export async function GET() {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -8,7 +10,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('settings')
-    .select('watched_cc_address, default_send_mode, notifications_enabled')
+    .select(SETTINGS_FIELDS)
     .eq('user_id', user.id)
     .single()
 
@@ -22,7 +24,7 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const allowed = ['watched_cc_address', 'default_send_mode', 'notifications_enabled']
+  const allowed = ['watched_cc_address', 'default_send_mode', 'notifications_enabled', 'auto_followup_enabled', 'auto_followup_send_mode', 'auto_followup_steps']
   const patch: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) patch[key] = body[key]
@@ -32,7 +34,7 @@ export async function PATCH(req: NextRequest) {
     .from('settings')
     .update(patch)
     .eq('user_id', user.id)
-    .select('watched_cc_address, default_send_mode, notifications_enabled')
+    .select(SETTINGS_FIELDS)
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
