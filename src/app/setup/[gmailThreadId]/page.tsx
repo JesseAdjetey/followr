@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { AppShell } from '@/components/AppShell'
 import { EmailPreview } from '@/components/setup/EmailPreview'
 import { ModeToggle } from '@/components/setup/ModeToggle'
@@ -21,6 +21,7 @@ const DEFAULT_STEP = (): StepDraft => ({
 export default function SetupPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { templates, loading: templatesLoading } = useTemplates()
 
   const [thread, setThread] = useState<Thread | null>(null)
@@ -31,20 +32,34 @@ export default function SetupPage() {
 
   useEffect(() => {
     async function load() {
-      // Find thread by gmail_thread_id
       const res = await fetch('/api/threads')
       if (!res.ok) { setLoading(false); return }
-      const all: Thread[] = await res.json()
+      const all: (Thread & { steps?: StepDraft[] })[] = await res.json()
       const found = all.find(t => t.gmail_thread_id === params.gmailThreadId)
       if (!found) { router.push('/'); return }
       setThread(found)
       setSendMode(found.send_mode)
+
+      // Load existing steps if editing an already-configured thread
+      const isEdit = searchParams.get('edit') === 'true'
+      const existingSteps = found.steps
+      if (isEdit && existingSteps && existingSteps.length > 0) {
+        setSteps(existingSteps.map((s: StepDraft & { send_after_days?: number; time_unit?: string }) => ({
+          step_number: s.step_number,
+          send_after_days: s.send_after_days ?? 3,
+          time_unit: s.time_unit ?? 'days',
+          message_source: s.message_source,
+          template_id: s.template_id ?? null,
+          custom_body: s.custom_body ?? '',
+        })))
+      }
+
       setLoading(false)
     }
     load()
-  }, [params.gmailThreadId, router])
+  }, [params.gmailThreadId, router, searchParams])
 
-  // Set default template_id once templates load
+  // Set default template_id once templates load (only for fresh setup)
   useEffect(() => {
     if (templates.length > 0 && steps[0].template_id === null && steps[0].message_source === 'template') {
       setSteps(prev => prev.map((s, i) => i === 0 ? { ...s, template_id: templates[0].id } : s))

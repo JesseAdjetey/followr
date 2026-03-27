@@ -97,21 +97,45 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
         </div>
 
         {step.message_source === 'template' ? (
-          <select
-            value={step.template_id ?? ''}
-            onChange={e => onChange(index, 'template_id', e.target.value || null)}
-            className="w-full rounded-lg px-3 py-2 text-sm outline-none"
-            style={{
-              background: 'var(--surface2)',
-              border: '1px solid rgba(0,0,0,0.10)',
-              color: step.template_id ? 'var(--text)' : 'var(--hint)',
-            }}
-          >
-            <option value="">Select a template…</option>
-            {templates.map(t => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
+          <>
+            <select
+              value={step.template_id ?? ''}
+              onChange={e => onChange(index, 'template_id', e.target.value || null)}
+              className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+              style={{
+                background: 'var(--surface2)',
+                border: '1px solid rgba(0,0,0,0.10)',
+                color: step.template_id ? 'var(--text)' : 'var(--hint)',
+              }}
+            >
+              <option value="">Select a template…</option>
+              {templates.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+            {(() => {
+              const tpl = templates.find(t => t.id === step.template_id)
+              if (!tpl) return null
+              return (
+                <div
+                  className="rounded-lg px-3 py-2.5 text-sm leading-relaxed relative"
+                  style={{ background: 'var(--surface2)', border: '1px solid rgba(0,0,0,0.08)', color: 'var(--muted)' }}
+                >
+                  <p className="whitespace-pre-wrap pr-16">{tpl.body}</p>
+                  <button
+                    onClick={() => {
+                      onChange(index, 'custom_body', tpl.body)
+                      onChange(index, 'message_source', 'custom')
+                    }}
+                    className="absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-md"
+                    style={{ background: '#fff', color: 'var(--accent)', border: '1px solid rgba(0,0,0,0.10)' }}
+                  >
+                    Edit
+                  </button>
+                </div>
+              )
+            })()}
+          </>
         ) : (
           <textarea
             value={step.custom_body}
