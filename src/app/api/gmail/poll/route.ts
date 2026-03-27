@@ -125,6 +125,49 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // Auto-activate any existing pending_setup threads for this user
+      if (s.auto_followup_enabled) {
+        const autoSteps: StepDraft[] = s.auto_followup_steps ?? []
+        const autoSendMode: string = s.auto_followup_send_mode ?? 'auto_send'
+
+        if (autoSteps.length > 0) {
+          const { data: pendingThreads } = await supabase
+            .from('threads')
+            .select('id, email_date')
+            .eq('user_id', s.user_id)
+            .eq('status', 'pending_setup')
+
+          for (const pt of pendingThreads ?? []) {
+            const { count } = await supabase
+              .from('steps')
+              .select('id', { count: 'exact', head: true })
+              .eq('thread_id', pt.id)
+
+            if ((count ?? 0) > 0) continue
+
+            const threadDate = new Date(pt.email_date)
+            const scheduledDates = computeScheduledDates(threadDate, autoSteps)
+            const stepRows = autoSteps.map((step, i) => ({
+              thread_id: pt.id,
+              user_id: s.user_id,
+              step_number: i + 1,
+              send_after_days: step.time_unit === 'weeks' ? step.send_after_days * 7 : step.send_after_days,
+              scheduled_at: scheduledDates[i].toISOString(),
+              message_source: step.message_source,
+              template_id: step.template_id ?? null,
+              custom_body: step.custom_body || null,
+              status: 'pending',
+            }))
+
+            await supabase.from('steps').insert(stepRows)
+            await supabase
+              .from('threads')
+              .update({ status: autoSendMode === 'auto_send' ? 'waiting' : 'needs_approval', send_mode: autoSendMode })
+              .eq('id', pt.id)
+          }
+        }
+      }
+
       results[s.user_id] = newCount
     } catch (err) {
       console.error(`Poll error for user ${s.user_id}:`, err)
