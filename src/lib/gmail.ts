@@ -152,6 +152,7 @@ export async function sendReply(
   userId: string,
   gmailThreadId: string,
   inReplyToMessageId: string,
+  toEmail: string,
   subject: string,
   body: string
 ): Promise<string | null> {
@@ -166,6 +167,7 @@ export async function sendReply(
   const replySubject = subject.startsWith('Re:') ? subject : `Re: ${subject}`
   const rawMessage = [
     `From: ${fromEmail}`,
+    `To: ${toEmail}`,
     `In-Reply-To: <${inReplyToMessageId}>`,
     `References: <${inReplyToMessageId}>`,
     `Subject: ${replySubject}`,

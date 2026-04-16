@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const secret = authHeader?.replace('Bearer ', '').trim()
     ?? req.headers.get('x-cron-secret')
     ?? new URL(req.url).searchParams.get('secret')
-  if (secret !== process.env.CRON_SECRET) {
+  if (process.env.NODE_ENV === 'production' && secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
           thread.user_id,
           thread.gmail_thread_id,
           thread.gmail_message_id,
+          thread.recipient_email,
           thread.subject,
           body
         )

@@ -50,6 +50,7 @@ export async function POST(
     user.id,
     thread.gmail_thread_id,
     thread.gmail_message_id,
+    thread.recipient_email,
     thread.subject,
     body
   )
