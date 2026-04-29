@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/cn'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -11,6 +12,13 @@ interface AppShellProps {
 
 export function AppShell({ children, rightPanel }: AppShellProps) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleSignOut() {
+    const supabase = createBrowserSupabaseClient()
+    await supabase.auth.signOut()
+    router.push('/auth/signin')
+  }
 
   const navItems = [
     {
@@ -81,6 +89,21 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
             )
           })}
         </nav>
+
+        <div className="mt-auto px-2.5">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium w-full transition-all hover:bg-surface2"
+            style={{ color: 'var(--muted)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Sign out
+          </button>
+        </div>
       </aside>
 
       {/* Main content */}
