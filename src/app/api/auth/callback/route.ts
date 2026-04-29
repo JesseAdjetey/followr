@@ -32,6 +32,8 @@ export async function GET(request: NextRequest) {
   const providerToken = data.session.provider_token
   const providerRefreshToken = data.session.provider_refresh_token
 
+  console.log('OAuth callback - provider_token:', !!providerToken, 'provider_refresh_token:', !!providerRefreshToken)
+
   // Save Gmail tokens to settings table
   if (providerToken || providerRefreshToken) {
     await supabase.from('settings').upsert({
