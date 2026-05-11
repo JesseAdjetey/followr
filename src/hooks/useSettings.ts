@@ -10,6 +10,7 @@ export interface UserSettings {
   auto_followup_enabled: boolean
   auto_followup_send_mode: 'auto_send' | 'requires_approval'
   auto_followup_steps: StepDraft[]
+  gmail_connected: boolean
 }
 
 export function useSettings() {

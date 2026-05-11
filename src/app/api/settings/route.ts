@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
-const SETTINGS_FIELDS = 'watched_cc_address, default_send_mode, notifications_enabled, auto_followup_enabled, auto_followup_send_mode, auto_followup_steps'
+const SETTINGS_FIELDS = 'watched_cc_address, default_send_mode, notifications_enabled, auto_followup_enabled, auto_followup_send_mode, auto_followup_steps, gmail_refresh_token'
 
 export async function GET() {
   const supabase = createServerSupabaseClient()
@@ -15,7 +15,9 @@ export async function GET() {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+
+  const { gmail_refresh_token, ...rest } = data as any
+  return NextResponse.json({ ...rest, gmail_connected: !!gmail_refresh_token })
 }
 
 export async function PATCH(req: NextRequest) {

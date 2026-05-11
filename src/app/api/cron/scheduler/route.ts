@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
-import { sendReply, substituteVariables } from '@/lib/gmail'
+import { sendReply, substituteVariables, isInvalidGrantError, clearGmailTokens } from '@/lib/gmail'
 
 export async function GET(req: NextRequest) {
   return POST(req)
@@ -81,7 +81,12 @@ export async function POST(req: NextRequest) {
           .update({ status: nextStatus, ...(nextStatus === 'completed' ? { completed_at: now.toISOString() } : {}) })
           .eq('id', thread.id)
       } catch (err) {
-        console.error('Failed to send step', step.id, err)
+        if (isInvalidGrantError(err)) {
+          console.warn(`invalid_grant for user ${thread.user_id} — clearing tokens, user must reconnect Gmail`)
+          await clearGmailTokens(thread.user_id)
+        } else {
+          console.error('Failed to send step', step.id, err)
+        }
       }
     } else {
       // requires_approval — mark step due, thread overdue if already past

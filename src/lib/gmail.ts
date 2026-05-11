@@ -237,3 +237,20 @@ export async function getGmailClient(userId: string) {
   const auth = await getAuthenticatedClient(userId)
   return google.gmail({ version: 'v1', auth })
 }
+
+export function isInvalidGrantError(err: unknown): boolean {
+  const e = err as any
+  return (
+    e?.response?.data?.error === 'invalid_grant' ||
+    e?.message?.includes('invalid_grant') ||
+    e?.code === 'invalid_grant'
+  )
+}
+
+export async function clearGmailTokens(userId: string): Promise<void> {
+  const supabase = createServiceSupabaseClient()
+  await supabase
+    .from('settings')
+    .update({ gmail_access_token: null, gmail_refresh_token: null, gmail_token_expiry: null })
+    .eq('user_id', userId)
+}

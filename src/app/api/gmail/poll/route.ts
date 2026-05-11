@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
-import { getGmailClient, getMessage, isWatchedAddressCCd, isReplyFromRecipient, extractEmail, extractName } from '@/lib/gmail'
+import { getGmailClient, getMessage, isWatchedAddressCCd, isReplyFromRecipient, extractEmail, extractName, isInvalidGrantError, clearGmailTokens } from '@/lib/gmail'
 import { google } from 'googleapis'
 import { getAuthenticatedClient } from '@/lib/gmail'
 import { computeScheduledDates } from '@/lib/sequence'
@@ -170,7 +170,12 @@ export async function GET(req: NextRequest) {
 
       results[s.user_id] = newCount
     } catch (err) {
-      console.error(`Poll error for user ${s.user_id}:`, err)
+      if (isInvalidGrantError(err)) {
+        console.warn(`invalid_grant for user ${s.user_id} — clearing tokens, user must reconnect Gmail`)
+        await clearGmailTokens(s.user_id)
+      } else {
+        console.error(`Poll error for user ${s.user_id}:`, err)
+      }
     }
   }
 

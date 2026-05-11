@@ -275,6 +275,14 @@ export default function SettingsPage() {
               {gmailStatus === 'error' && (
                 <p className="text-xs font-medium" style={{ color: '#dc2626' }}>Connection failed — try again.</p>
               )}
+              {gmailStatus !== 'connected' && settings && !settings.gmail_connected && (
+                <p className="text-xs font-medium" style={{ color: '#dc2626' }}>
+                  Gmail disconnected — your tokens expired. Reconnect to resume polling and follow-ups.
+                </p>
+              )}
+              {gmailStatus !== 'connected' && settings?.gmail_connected && (
+                <p className="text-xs font-medium" style={{ color: '#16a34a' }}>Gmail is connected.</p>
+              )}
               <a
                 href="/api/gmail/connect"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
@@ -284,7 +292,7 @@ export default function SettingsPage() {
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                   <polyline points="22,6 12,13 2,6"/>
                 </svg>
-                Connect Gmail
+                {settings?.gmail_connected ? 'Reconnect Gmail' : 'Connect Gmail'}
               </a>
             </div>
 
