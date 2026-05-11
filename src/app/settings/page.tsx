@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { AppShell } from '@/components/AppShell'
 import { StepCard } from '@/components/setup/StepCard'
 import { useSettings } from '@/hooks/useSettings'
@@ -20,8 +19,12 @@ const DEFAULT_AUTO_STEP = (): StepDraft => ({
 export default function SettingsPage() {
   const { settings, loading, saving, error, update } = useSettings()
   const { templates } = useTemplates()
-  const searchParams = useSearchParams()
-  const gmailStatus = searchParams.get('gmail')
+  const [gmailStatus, setGmailStatus] = useState<string | null>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setGmailStatus(params.get('gmail'))
+  }, [])
 
   const [ccAddress, setCcAddress] = useState('')
   const [sendMode, setSendMode] = useState<'auto_send' | 'requires_approval'>('auto_send')
