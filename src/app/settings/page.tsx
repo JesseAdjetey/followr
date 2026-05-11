@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { AppShell } from '@/components/AppShell'
 import { StepCard } from '@/components/setup/StepCard'
 import { useSettings } from '@/hooks/useSettings'
@@ -19,6 +20,8 @@ const DEFAULT_AUTO_STEP = (): StepDraft => ({
 export default function SettingsPage() {
   const { settings, loading, saving, error, update } = useSettings()
   const { templates } = useTemplates()
+  const searchParams = useSearchParams()
+  const gmailStatus = searchParams.get('gmail')
 
   const [ccAddress, setCcAddress] = useState('')
   const [sendMode, setSendMode] = useState<'auto_send' | 'requires_approval'>('auto_send')
@@ -253,6 +256,33 @@ export default function SettingsPage() {
                   />
                 </button>
               </div>
+            </div>
+
+            {/* Gmail connection */}
+            <div className="bg-white rounded-2xl p-5 flex flex-col gap-3" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
+              <div>
+                <p className="font-semibold text-sm" style={{ letterSpacing: '-0.01em' }}>Gmail connection</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
+                  Reconnect if follow-ups stop sending or polling stops working.
+                </p>
+              </div>
+              {gmailStatus === 'connected' && (
+                <p className="text-xs font-medium" style={{ color: '#16a34a' }}>Gmail connected successfully.</p>
+              )}
+              {gmailStatus === 'error' && (
+                <p className="text-xs font-medium" style={{ color: '#dc2626' }}>Connection failed — try again.</p>
+              )}
+              <a
+                href="/api/gmail/connect"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
+                style={{ background: 'var(--accent)', color: '#fff', width: 'fit-content' }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                Connect Gmail
+              </a>
             </div>
 
             {/* Save */}
