@@ -249,6 +249,15 @@ export function isInvalidGrantError(err: unknown): boolean {
 
 export async function clearGmailTokens(userId: string): Promise<void> {
   const supabase = createServiceSupabaseClient()
+  // Only clear if a refresh token is actually stored (avoids duplicate log noise
+  // when two cron jobs race to clear the same already-cleared user)
+  const { data } = await supabase
+    .from('settings')
+    .select('gmail_refresh_token')
+    .eq('user_id', userId)
+    .single()
+  if (!data?.gmail_refresh_token) return
+
   await supabase
     .from('settings')
     .update({ gmail_access_token: null, gmail_refresh_token: null, gmail_token_expiry: null })
