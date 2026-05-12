@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
-import { isWatchedAddressCCd, extractEmail, extractName, isInvalidGrantError, clearGmailTokens, getAuthenticatedClient } from '@/lib/gmail'
+import { isWatchedAddressCCd, extractEmail, extractName, isInvalidGrantError, clearGmailTokens, getOAuthClient } from '@/lib/gmail'
 import { google } from 'googleapis'
 import { computeScheduledDates } from '@/lib/sequence'
 import type { StepDraft } from '@/types'
@@ -22,9 +22,10 @@ export async function GET(req: NextRequest) {
   // Get all users with Gmail connected and a watched CC address
   const { data: settings } = await supabase
     .from('settings')
-    .select('user_id, watched_cc_address, gmail_access_token, gmail_refresh_token, gmail_history_id, auto_followup_enabled, auto_followup_send_mode, auto_followup_steps')
+    .select('user_id, watched_cc_address, gmail_access_token, gmail_refresh_token, gmail_token_expiry, auto_followup_enabled, auto_followup_send_mode, auto_followup_steps')
     .not('gmail_refresh_token', 'is', null)
-    .not('watched_cc_address', 'eq', '')
+    .not('watched_cc_address', 'is', null)
+    .neq('watched_cc_address', '')
 
   const results: Record<string, number> = {}
   const pollDebug: Record<string, unknown> = {}
@@ -39,7 +40,21 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-      const auth = await getAuthenticatedClient(s.user_id)
+      // Build OAuth2 client directly from already-fetched tokens — no second DB round-trip
+      const auth = getOAuthClient()
+      auth.setCredentials({
+        access_token: s.gmail_access_token,
+        refresh_token: s.gmail_refresh_token,
+        expiry_date: s.gmail_token_expiry ? new Date(s.gmail_token_expiry).getTime() : undefined,
+      })
+      auth.on('tokens', async (tokens) => {
+        const patch: Record<string, string> = {}
+        if (tokens.access_token) patch.gmail_access_token = tokens.access_token
+        if (tokens.expiry_date) patch.gmail_token_expiry = new Date(tokens.expiry_date).toISOString()
+        if (Object.keys(patch).length > 0) {
+          await supabase.from('settings').update(patch).eq('user_id', s.user_id)
+        }
+      })
       const gmail = google.gmail({ version: 'v1', auth })
 
       // Search for recent emails with the CC address
