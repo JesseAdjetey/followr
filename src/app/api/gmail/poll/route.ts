@@ -27,9 +27,16 @@ export async function GET(req: NextRequest) {
     .not('watched_cc_address', 'eq', '')
 
   const results: Record<string, number> = {}
+  const pollDebug: Record<string, unknown> = {}
 
   for (const s of settings ?? []) {
-    if (!s.watched_cc_address || !s.gmail_refresh_token) continue
+    const uid = s.user_id
+    pollDebug[uid] = { hasAddress: !!s.watched_cc_address, hasToken: !!s.gmail_refresh_token, address: s.watched_cc_address }
+
+    if (!s.watched_cc_address || !s.gmail_refresh_token) {
+      pollDebug[uid] = { ...pollDebug[uid] as object, skipped: 'missing address or token' }
+      continue
+    }
 
     try {
       const auth = await getAuthenticatedClient(s.user_id)
@@ -43,6 +50,7 @@ export async function GET(req: NextRequest) {
       })
 
       const messageIds = searchRes.data.messages?.map(m => m.id!) ?? []
+      pollDebug[uid] = { ...pollDebug[uid] as object, messagesFound: messageIds.length }
       let newCount = 0
 
       for (const messageId of messageIds) {
@@ -182,7 +190,10 @@ export async function GET(req: NextRequest) {
       }
 
       results[s.user_id] = newCount
+      pollDebug[uid] = { ...pollDebug[uid] as object, threadsFound: newCount }
     } catch (err) {
+      const errMsg = (err as any)?.message ?? String(err)
+      pollDebug[uid] = { ...pollDebug[uid] as object, error: errMsg }
       if (isInvalidGrantError(err)) {
         console.warn(`invalid_grant for user ${s.user_id} — clearing tokens, user must reconnect Gmail`)
         await clearGmailTokens(s.user_id)
@@ -192,12 +203,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const debug = (settings ?? []).map(s => ({
-    user_id: s.user_id,
-    auto_followup_enabled: s.auto_followup_enabled,
-    auto_followup_steps_count: (s.auto_followup_steps ?? []).length,
-    auto_followup_steps: s.auto_followup_steps,
-  }))
-
-  return NextResponse.json({ ok: true, results, debug, polledAt: new Date().toISOString() })
+  return NextResponse.json({ ok: true, results, pollDebug, polledAt: new Date().toISOString() })
 }
