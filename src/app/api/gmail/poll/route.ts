@@ -3,9 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
-import { getGmailClient, getMessage, isWatchedAddressCCd, isReplyFromRecipient, extractEmail, extractName, isInvalidGrantError, clearGmailTokens } from '@/lib/gmail'
+import { isWatchedAddressCCd, extractEmail, extractName, isInvalidGrantError, clearGmailTokens, getAuthenticatedClient } from '@/lib/gmail'
 import { google } from 'googleapis'
-import { getAuthenticatedClient } from '@/lib/gmail'
 import { computeScheduledDates } from '@/lib/sequence'
 import type { StepDraft } from '@/types'
 
@@ -39,16 +38,30 @@ export async function GET(req: NextRequest) {
       // Search for recent emails with the CC address
       const searchRes = await gmail.users.messages.list({
         userId: 'me',
-        q: `cc:${s.watched_cc_address} newer_than:1d`,
-        maxResults: 20,
+        q: `cc:${s.watched_cc_address} newer_than:7d`,
+        maxResults: 50,
       })
 
       const messageIds = searchRes.data.messages?.map(m => m.id!) ?? []
       let newCount = 0
 
       for (const messageId of messageIds) {
-        const msg = await getMessage(s.user_id, messageId)
-        if (!msg) continue
+        // Reuse the same gmail client — avoid redundant getAuthenticatedClient calls per message
+        const msgRes = await gmail.users.messages.get({ userId: 'me', id: messageId, format: 'full' })
+        const raw = msgRes.data
+        const headers = raw.payload?.headers ?? []
+        const get = (name: string) => headers.find(h => h.name?.toLowerCase() === name.toLowerCase())?.value ?? ''
+
+        const msg = {
+          id: raw.id!,
+          threadId: raw.threadId!,
+          subject: get('Subject'),
+          from: get('From'),
+          to: get('To'),
+          cc: get('Cc'),
+          date: get('Date'),
+          snippet: raw.snippet ?? '',
+        }
 
         if (!isWatchedAddressCCd(msg.cc, s.watched_cc_address)) continue
 
