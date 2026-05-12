@@ -24,10 +24,21 @@ const SECTION_ORDER: UrgencyGroup[] = ['overdue', 'today', 'this_week', 'later',
 
 export default function FeedPage() {
   const router = useRouter()
-  const { threads, loading } = useThreads()
+  const { threads, loading, reload } = useThreads()
   const { settings } = useSettings()
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [syncing, setSyncing] = useState(false)
+
+  async function handleSync() {
+    setSyncing(true)
+    try {
+      await fetch('/api/gmail/sync', { method: 'POST' })
+      await reload()
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   const pendingSetup = threads.filter(t => t.status === 'pending_setup')
   const active = threads.filter(t => t.status !== 'pending_setup')
@@ -94,13 +105,31 @@ export default function FeedPage() {
       >
         <span className="font-semibold lg:hidden" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Followr</span>
         <span className="hidden lg:block font-semibold" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Feed</span>
-        <Link
-          href="/settings"
-          className="text-xs font-mono px-2.5 py-1 rounded-full transition-opacity hover:opacity-70"
-          style={{ background: 'var(--surface2)', color: 'var(--muted)', fontSize: 10 }}
-        >
-          {settings?.watched_cc_address || 'Set CC address →'}
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="text-xs font-medium px-2.5 py-1 rounded-full transition-opacity hover:opacity-70 flex items-center gap-1"
+            style={{ background: 'var(--surface2)', color: 'var(--muted)', fontSize: 10, opacity: syncing ? 0.5 : 1 }}
+            title="Sync Gmail now"
+          >
+            <svg
+              width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+              style={{ transform: syncing ? 'rotate(360deg)' : undefined, transition: syncing ? 'transform 0.6s linear' : undefined }}
+            >
+              <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            {syncing ? 'Syncing…' : 'Sync'}
+          </button>
+          <Link
+            href="/settings"
+            className="text-xs font-mono px-2.5 py-1 rounded-full transition-opacity hover:opacity-70"
+            style={{ background: 'var(--surface2)', color: 'var(--muted)', fontSize: 10 }}
+          >
+            {settings?.watched_cc_address || 'Set CC address →'}
+          </Link>
+        </div>
       </div>
 
       {/* New email banners */}

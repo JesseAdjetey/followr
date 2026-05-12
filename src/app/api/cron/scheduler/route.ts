@@ -21,6 +21,14 @@ export async function POST(req: NextRequest) {
   const supabase = createServiceSupabaseClient()
   const now = new Date()
 
+  // Only process steps for users with valid Gmail tokens
+  const { data: connectedUsers } = await supabase
+    .from('settings')
+    .select('user_id')
+    .not('gmail_refresh_token', 'is', null)
+
+  const connectedUserIds = new Set((connectedUsers ?? []).map(s => s.user_id))
+
   // Find all pending steps that are due
   const { data: dueSteps } = await supabase
     .from('steps')
@@ -31,6 +39,9 @@ export async function POST(req: NextRequest) {
   for (const step of dueSteps ?? []) {
     const thread = step.thread
     if (!thread) continue
+
+    // Skip users with no Gmail tokens (disconnected)
+    if (!connectedUserIds.has(thread.user_id)) continue
 
     // Skip paused threads
     if (['replied', 'completed', 'snoozed', 'pending_setup'].includes(thread.status)) continue
