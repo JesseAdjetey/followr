@@ -142,7 +142,7 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
             <img
               src={isDark ? '/Followr_WordxIcon_Logo_White.png' : '/Followr_WordxIcon_Logo_Black.png'}
               alt="Followr"
-              style={{ width: 120, height: 'auto', objectFit: 'contain', display: 'block', flexShrink: 0 }}
+              style={{ width: 120, height: 'auto', objectFit: 'contain', display: 'block', flexShrink: 0, maxWidth: 'none' }}
             />
           </motion.div>
         </div>
