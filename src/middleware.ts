@@ -4,6 +4,13 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Skip static files from /public — without this, unauthenticated requests
+  // for images/fonts get redirected to /auth/signin, returning HTML to the
+  // browser instead of the file (breaking images on first load).
+  if (/\.[^/]+$/.test(pathname)) {
+    return NextResponse.next()
+  }
+
   // Allow auth routes through without a session check
   if (
     pathname.startsWith('/auth') ||
