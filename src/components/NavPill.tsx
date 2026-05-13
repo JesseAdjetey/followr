@@ -73,8 +73,8 @@ export function NavPill({
           justifyContent: 'center',
           overflow: 'hidden',
           /* Fade edges so adjacent labels dissolve smoothly */
-          maskImage: 'linear-gradient(to right, transparent, black 22%, black 78%, transparent)',
-          WebkitMaskImage: 'linear-gradient(to right, transparent, black 22%, black 78%, transparent)',
+          maskImage: 'linear-gradient(to right, transparent, black 12%, black 88%, transparent)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent, black 12%, black 88%, transparent)',
           minWidth: 48,
           padding: '7px 2px',
         }}
@@ -98,11 +98,12 @@ export function NavPill({
             touchAction: 'none',
           }}
           onDragEnd={(_, info) => {
-            const commitDist = (trackRef.current?.offsetWidth ?? 140) * 0.85
+            // Commit distance moves the adjacent label to approx center without overshooting into the fade zone
+            const commitDist = (trackRef.current?.offsetWidth ?? 140) * 0.38
             if (info.offset.x < -DRAG_THRESHOLD && canGoNext) {
-              animate(x, -commitDist, { duration: 0.12, ease: [0.4, 0, 0.2, 1] }).then(() => onNext?.())
+              animate(x, -commitDist, { duration: 0.13, ease: [0.4, 0, 0.2, 1], onComplete: () => onNext?.() })
             } else if (info.offset.x > DRAG_THRESHOLD && canGoPrev) {
-              animate(x, commitDist, { duration: 0.12, ease: [0.4, 0, 0.2, 1] }).then(() => onPrev?.())
+              animate(x, commitDist, { duration: 0.13, ease: [0.4, 0, 0.2, 1], onComplete: () => onPrev?.() })
             } else {
               animate(x, 0, { type: 'spring', stiffness: 480, damping: 34 })
             }
