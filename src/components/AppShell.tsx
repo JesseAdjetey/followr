@@ -43,6 +43,7 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
   const [collapsed, setCollapsed] = useState(false)
+  const [signOutConfirm, setSignOutConfirm] = useState(false)
 
   const [systemDark, setSystemDark] = useState(false)
 
@@ -78,6 +79,10 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
     const supabase = createBrowserSupabaseClient()
     await supabase.auth.signOut()
     router.push('/auth/signin')
+  }
+
+  function confirmSignOut() {
+    setSignOutConfirm(true)
   }
 
   function navigateTo(href: string) {
@@ -256,7 +261,7 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
 
           {/* Sign out */}
           <button
-            onClick={handleSignOut}
+            onClick={confirmSignOut}
             title="Sign out"
             className={cn(
               'flex items-center rounded-lg text-xs font-bold w-full transition-all hover:text-[var(--text)]',
@@ -336,6 +341,56 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
           )
         })}
       </nav>
+
+      {/* Sign-out confirmation dialog */}
+      <AnimatePresence>
+        {signOutConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            style={{ background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(4px)' }}
+            onClick={() => setSignOutConfirm(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 8 }}
+              transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="rounded-2xl p-6 flex flex-col gap-4 w-full max-w-sm"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border2)' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex flex-col gap-1.5">
+                <p className="font-bold text-sm" style={{ color: 'var(--text)' }}>
+                  Wait — you&apos;re actually leaving?
+                </p>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>
+                  Your emails will just sit there, unanswered, staring at the wall. Is that really what you want for them?
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSignOutConfirm(false)}
+                  className="flex-1 py-2 rounded-lg text-xs font-bold transition-opacity hover:opacity-70"
+                  style={{ background: 'var(--surface2)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                >
+                  Stay (good choice)
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="flex-1 py-2 rounded-lg text-xs font-bold transition-opacity hover:opacity-70"
+                  style={{ background: 'var(--red-bg)', color: '#DC2626' }}
+                >
+                  Abandon ship
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
