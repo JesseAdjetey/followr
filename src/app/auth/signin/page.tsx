@@ -1,8 +1,24 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 export default function SignInPage() {
+  const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('followr-theme') || 'system'
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    setIsDark(saved === 'dark' || (saved === 'system' && mq.matches))
+
+    const handler = (e: MediaQueryListEvent) => {
+      const t = localStorage.getItem('followr-theme') || 'system'
+      if (t === 'system') setIsDark(e.matches)
+    }
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
   async function handleGoogleSignIn() {
     const supabase = createBrowserSupabaseClient()
     await supabase.auth.signInWithOAuth({
@@ -29,23 +45,13 @@ export default function SignInPage() {
     >
       {/* Centered content */}
       <div className="flex flex-col items-center" style={{ gap: 48 }}>
-        {/* Big logo — switches with theme class on <html> */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/Followr_WordxIcon_Logo_Black.png"
+          src={isDark ? '/Followr_WordxIcon_Logo_White.png' : '/Followr_WordxIcon_Logo_Black.png'}
           alt="Followr"
-          className="logo-light"
-          style={{ width: 280, height: 'auto', objectFit: 'contain' }}
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/Followr_WordxIcon_Logo_White.png"
-          alt="Followr"
-          className="logo-dark"
           style={{ width: 280, height: 'auto', objectFit: 'contain' }}
         />
 
-        {/* Tagline + button group — pushed down */}
         <div className="flex flex-col items-center" style={{ gap: 28 }}>
           <p className="text-xs tracking-widest uppercase" style={{ color: 'var(--muted)', letterSpacing: '0.15em' }}>
             Automated email follow-ups
@@ -75,12 +81,14 @@ export default function SignInPage() {
         </div>
       </div>
 
-      {/* Corner icon */}
+      {/* Corner watermark */}
       <div className="fixed bottom-6 right-6" style={{ opacity: 0.25 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/followr_black_nobg.png" alt="" className="logo-light" style={{ width: 26, height: 26, objectFit: 'contain' }} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/followr_white_nobg.png" alt="" className="logo-dark" style={{ width: 26, height: 26, objectFit: 'contain' }} />
+        <img
+          src={isDark ? '/followr_white_nobg.png' : '/followr_black_nobg.png'}
+          alt=""
+          style={{ width: 26, height: 26, objectFit: 'contain' }}
+        />
       </div>
     </div>
   )

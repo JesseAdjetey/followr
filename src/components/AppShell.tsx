@@ -365,10 +365,10 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
             >
               <div className="flex flex-col gap-1.5">
                 <p className="font-bold text-sm" style={{ color: 'var(--text)' }}>
-                  Wait — you&apos;re actually leaving?
+                  Off already?
                 </p>
                 <p className="text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>
-                  Your emails will just sit there, unanswered, staring at the wall. Is that really what you want for them?
+                  No worries — the autopilot&apos;s got it. Your sequences will keep firing like clockwork while you&apos;re gone. We&apos;ve got the inbox covered.
                 </p>
               </div>
               <div className="flex gap-2">
