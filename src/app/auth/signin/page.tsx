@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 export default function SignInPage() {
@@ -23,22 +24,48 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-      <div
-        className="bg-white rounded-2xl p-10 flex flex-col items-center gap-6 shadow-sm"
-        style={{ border: '1px solid rgba(0,0,0,0.08)', maxWidth: 400, width: '100%' }}
-      >
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-2xl font-semibold" style={{ letterSpacing: '-0.02em' }}>Followr</span>
-          <span className="text-sm" style={{ color: 'var(--muted)' }}>Automated email follow-ups</span>
-        </div>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center relative"
+      style={{ background: 'var(--bg)' }}
+    >
+      {/* Centered content */}
+      <div className="flex flex-col items-center gap-10">
+        {/* Big logo */}
+        <Image
+          src="/Followr_WordxIcon_Logo_Black.png"
+          alt="Followr"
+          width={220}
+          height={80}
+          style={{ objectFit: 'contain' }}
+          priority
+          className="dark-hide"
+        />
+        <Image
+          src="/Followr_WordxIcon_Logo_White.png"
+          alt="Followr"
+          width={220}
+          height={80}
+          style={{ objectFit: 'contain' }}
+          priority
+          className="dark-show"
+        />
 
+        {/* Tagline */}
+        <p className="text-xs tracking-widest uppercase" style={{ color: 'var(--muted)', letterSpacing: '0.15em' }}>
+          Automated email follow-ups
+        </p>
+
+        {/* Google button */}
         <button
           onClick={handleGoogleSignIn}
-          className="w-full flex items-center justify-center gap-3 py-3 px-5 rounded-xl font-medium text-sm transition-opacity hover:opacity-85"
-          style={{ background: 'var(--accent)', color: '#fff' }}
+          className="flex items-center gap-3 py-2.5 px-5 rounded-lg text-sm font-bold transition-opacity hover:opacity-80"
+          style={{
+            background: 'var(--text)',
+            color: 'var(--bg)',
+            letterSpacing: '0.02em',
+          }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24">
+          <svg width="16" height="16" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -47,10 +74,38 @@ export default function SignInPage() {
           Continue with Google
         </button>
 
-        <p className="text-xs text-center" style={{ color: 'var(--hint)' }}>
-          We'll request Gmail access to detect CC'd emails<br />and send follow-ups on your behalf.
+        <p className="text-xs text-center" style={{ color: 'var(--hint)', maxWidth: 280, lineHeight: 1.7 }}>
+          We'll request Gmail access to detect CC'd emails and send follow-ups on your behalf.
         </p>
       </div>
+
+      {/* Corner icon — adapts to dark/light mode */}
+      <div className="fixed bottom-6 right-6 opacity-30">
+        <Image
+          src="/followr_black_nobg.png"
+          alt=""
+          width={28}
+          height={28}
+          style={{ objectFit: 'contain' }}
+          className="dark-hide"
+        />
+        <Image
+          src="/followr_white_nobg.png"
+          alt=""
+          width={28}
+          height={28}
+          style={{ objectFit: 'contain' }}
+          className="dark-show"
+        />
+      </div>
+
+      <style>{`
+        .dark-show { display: none; }
+        @media (prefers-color-scheme: dark) {
+          .dark-hide { display: none; }
+          .dark-show { display: block; }
+        }
+      `}</style>
     </div>
   )
 }

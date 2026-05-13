@@ -5,14 +5,14 @@
 :root {
   --bg: #F2F1ED;
   --surface: #FFFFFF;
-  --surface2: #F7F6F2;
+  --surface2: #ECEAE5;
   --border: rgba(0,0,0,0.08);
   --border2: rgba(0,0,0,0.14);
-  --text: #1A1814;
+  --text: #1B222B;
   --muted: #888580;
   --hint: #B8B5AE;
   --accent: #2563EB;
-  --accent-bg: #EEF4FF;
+  --accent-bg: rgba(37,99,235,0.07);
   --green: #16A34A;
   --green-bg: #F0FDF4;
   --red: #DC2626;
@@ -29,7 +29,7 @@ html, body {
   height: 100%;
   background-color: var(--bg);
   color: var(--text);
-  font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-space-mono), 'Courier New', monospace;
   -webkit-font-smoothing: antialiased;
 }
 

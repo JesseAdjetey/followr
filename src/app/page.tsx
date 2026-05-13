@@ -27,7 +27,6 @@ export default function FeedPage() {
   const { threads, loading, reload } = useThreads()
   const { settings } = useSettings()
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
 
   async function handleSync() {
@@ -62,46 +61,15 @@ export default function FeedPage() {
   }, [filtered])
 
   function handleCardClick(thread: ThreadWithUrgency) {
-    setSelectedId(thread.id)
     router.push(`/thread/${thread.id}`)
   }
 
-  const selectedThread = active.find(t => t.id === selectedId) ?? null
-
-  // Detail panel content (desktop)
-  const DetailPanel = selectedThread ? (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
-        <p className="text-sm font-semibold leading-tight line-clamp-1" style={{ letterSpacing: '-0.01em' }}>
-          {selectedThread.subject}
-        </p>
-        <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
-          {selectedThread.recipient_name || selectedThread.recipient_email}
-        </p>
-      </div>
-      <div className="flex-1 flex items-center justify-center">
-        <a
-          href={`/thread/${selectedThread.id}`}
-          className="text-sm font-medium"
-          style={{ color: 'var(--accent)' }}
-        >
-          Open full view →
-        </a>
-      </div>
-    </div>
-  ) : (
-    <div className="flex flex-col h-full items-center justify-center gap-2 px-8 text-center">
-      <p className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Select a thread to preview</p>
-      <p className="text-xs" style={{ color: 'var(--hint)' }}>Click any thread card to see details</p>
-    </div>
-  )
-
   return (
-    <AppShell rightPanel={DetailPanel}>
+    <AppShell>
       {/* Top bar */}
       <div
         className="flex items-center justify-between px-4 py-3.5"
-        style={{ background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.08)', minHeight: 52 }}
+        style={{ background: 'var(--bg)', minHeight: 52 }}
       >
         <span className="font-semibold lg:hidden" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Followr</span>
         <span className="hidden lg:block font-semibold" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Feed</span>
@@ -173,7 +141,6 @@ export default function FeedPage() {
                   <ThreadCard
                     key={thread.id}
                     thread={thread}
-                    selected={thread.id === selectedId}
                     onClick={() => handleCardClick(thread)}
                   />
                 ))}

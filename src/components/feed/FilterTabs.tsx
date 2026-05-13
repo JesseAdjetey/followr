@@ -21,7 +21,7 @@ export function FilterTabs({ active, onChange }: FilterTabsProps) {
   return (
     <div
       className="flex gap-1.5 px-4 py-2.5 overflow-x-auto"
-      style={{ background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.08)', scrollbarWidth: 'none' }}
+      style={{ background: 'var(--bg)', scrollbarWidth: 'none' }}
     >
       {TABS.map(tab => (
         <button
@@ -35,7 +35,7 @@ export function FilterTabs({ active, onChange }: FilterTabsProps) {
           )}
           style={
             active === tab.id
-              ? { background: '#1A1814', color: '#fff', border: '1px solid #1A1814' }
+              ? { background: '#1B222B', color: '#F2F1ED', border: '1px solid #1B222B' }
               : { background: 'transparent', color: '#888580', border: '1px solid rgba(0,0,0,0.12)' }
           }
         >
