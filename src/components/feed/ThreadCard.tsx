@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/cn'
 import { Pill } from '@/components/ui/Pill'
 import type { ThreadWithUrgency } from '@/types'
@@ -33,19 +34,19 @@ export function ThreadCard({ thread, selected, onClick }: ThreadCardProps) {
     'waiting'
 
   return (
-    <div
+    <motion.div
       onClick={onClick}
+      whileTap={{ scale: 0.985, opacity: 0.8 }}
+      transition={{ duration: 0.08 }}
       className={cn(
-        'relative cursor-pointer transition-all',
+        'relative cursor-pointer',
         hasAccent ? 'rounded-r-xl rounded-l-none' : 'rounded-xl',
-        selected && 'ring-2 ring-accent ring-offset-1'
       )}
       style={{
         borderLeft: hasAccent ? `3px solid ${accentColor}` : undefined,
         background: 'var(--surface)',
         border: '1px solid var(--border)',
         borderLeftColor: hasAccent ? accentColor : undefined,
-        boxShadow: selected ? '0 0 0 2px #EEF4FF' : undefined,
       }}
     >
       <div className="p-3.5 flex flex-col gap-1.5">
@@ -104,6 +105,6 @@ export function ThreadCard({ thread, selected, onClick }: ThreadCardProps) {
           </span>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

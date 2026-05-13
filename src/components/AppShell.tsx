@@ -1,8 +1,11 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/cn'
+import { navDir, NAV_ORDER, getNavDirection } from '@/lib/navDirection'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { useTheme, type Theme } from './ThemeProvider'
 
@@ -11,15 +14,63 @@ interface AppShellProps {
   rightPanel?: React.ReactNode
 }
 
+const THEME_CYCLE: Theme[] = ['light', 'system', 'dark']
+const THEME_ICONS: Record<Theme, React.ReactNode> = {
+  light: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  ),
+  system: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+  ),
+  dark: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  ),
+}
+
 export function AppShell({ children, rightPanel }: AppShellProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('followr-sidebar-collapsed')
+    if (saved === '1') setCollapsed(true)
+  }, [])
+
+  function toggleCollapsed() {
+    setCollapsed(v => {
+      const next = !v
+      localStorage.setItem('followr-sidebar-collapsed', next ? '1' : '0')
+      return next
+    })
+  }
+
+  function cycleTheme() {
+    const idx = THEME_CYCLE.indexOf(theme)
+    setTheme(THEME_CYCLE[(idx + 1) % THEME_CYCLE.length])
+  }
 
   async function handleSignOut() {
     const supabase = createBrowserSupabaseClient()
     await supabase.auth.signOut()
     router.push('/auth/signin')
+  }
+
+  function navigateTo(href: string) {
+    navDir.current = getNavDirection(pathname, href)
+    router.push(href)
   }
 
   const navItems = [
@@ -28,8 +79,8 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
       label: 'Feed',
       icon: (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="3" width="18" height="18" rx="3" />
-          <path d="M3 9h18M9 21V9" />
+          <rect x="3" y="3" width="18" height="18" rx="3"/>
+          <path d="M3 9h18M9 21V9"/>
         </svg>
       ),
     },
@@ -38,11 +89,10 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
       label: 'Templates',
       icon: (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-          <line x1="16" y1="13" x2="8" y2="13" />
-          <line x1="16" y1="17" x2="8" y2="17" />
-          <polyline points="10 9 9 9 8 9" />
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
         </svg>
       ),
     },
@@ -51,72 +101,76 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
       label: 'Settings',
       icon: (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       ),
     },
   ]
 
-  const themeOptions: { value: Theme; title: string; icon: React.ReactNode }[] = [
-    {
-      value: 'light',
-      title: 'Light',
-      icon: (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-      ),
-    },
-    {
-      value: 'system',
-      title: 'System',
-      icon: (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-        </svg>
-      ),
-    },
-    {
-      value: 'dark',
-      title: 'Dark',
-      icon: (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      ),
-    },
-  ]
+  const sidebarW = collapsed ? 64 : 220
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
       {/* Sidebar — desktop only */}
-      <aside
-        className="hidden lg:flex flex-col py-5 flex-shrink-0"
-        style={{ width: 220, background: 'var(--bg)' }}
+      <motion.aside
+        animate={{ width: sidebarW }}
+        transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+        className="hidden lg:flex flex-col py-5 flex-shrink-0 relative overflow-hidden"
+        style={{ background: 'var(--bg)' }}
       >
         {/* Logo */}
-        <div className="px-5 mb-8">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/Followr_WordxIcon_Logo_Black.png" alt="Followr" className="logo-light" style={{ width: 110, height: 'auto', objectFit: 'contain' }} />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/Followr_WordxIcon_Logo_White.png" alt="Followr" className="logo-dark" style={{ width: 110, height: 'auto', objectFit: 'contain' }} />
+        <div className={cn('mb-8 flex items-center', collapsed ? 'px-4 justify-center' : 'px-5 justify-between')}>
+          <motion.div animate={{ opacity: 1 }} className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/followr_black_nobg.png" alt="Followr" className="logo-light flex-shrink-0" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/followr_white_nobg.png" alt="Followr" className="logo-dark flex-shrink-0" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+            <AnimatePresence initial={false}>
+              {!collapsed && (
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.18 }}
+                  style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/Follow_Word_Logo_Black.png" alt="" className="logo-light" style={{ height: 18, width: 'auto', objectFit: 'contain' }} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/Follow_Word_Logo_White.png" alt="" className="logo-dark" style={{ height: 18, width: 'auto', objectFit: 'contain' }} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Collapse toggle — only visible when expanded */}
+          {!collapsed && (
+            <button
+              onClick={toggleCollapsed}
+              title="Collapse sidebar"
+              className="transition-opacity hover:opacity-60"
+              style={{ color: 'var(--hint)', flexShrink: 0 }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Nav */}
-        <nav className="flex flex-col gap-1 px-3">
+        <nav className="flex flex-col gap-1 px-2">
           {navItems.map(item => {
             const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
             return (
-              <Link
+              <button
                 key={item.href}
-                href={item.href}
+                onClick={() => navigateTo(item.href)}
+                title={collapsed ? item.label : undefined}
                 className={cn(
-                  'flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold transition-all',
+                  'flex items-center rounded-lg text-xs font-bold transition-all w-full',
+                  collapsed ? 'justify-center px-0 py-2.5' : 'gap-2.5 px-3 py-2',
                   active ? 'text-[var(--text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
                 )}
                 style={
@@ -126,57 +180,125 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
                 }
               >
                 {item.icon}
-                {item.label}
-              </Link>
+                <AnimatePresence initial={false}>
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.15 }}
+                      style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
             )
           })}
         </nav>
 
-        <div className="mt-auto px-3 flex flex-col gap-3">
+        {/* Bottom controls */}
+        <div className="mt-auto px-2 flex flex-col gap-2">
+          {/* Expand button when collapsed */}
+          {collapsed && (
+            <button
+              onClick={toggleCollapsed}
+              title="Expand sidebar"
+              className="flex items-center justify-center py-2 w-full rounded-lg transition-all hover:text-[var(--text)]"
+              style={{ color: 'var(--hint)', border: '1px solid transparent' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          )}
+
           {/* Theme toggle */}
-          <div
-            className="flex items-center rounded-lg overflow-hidden mx-0"
-            style={{ border: '1px solid var(--border)', background: 'var(--surface2)' }}
-          >
-            {themeOptions.map(opt => (
-              <button
-                key={opt.value}
-                title={opt.title}
-                onClick={() => setTheme(opt.value)}
-                className="flex-1 flex items-center justify-center py-1.5 transition-all"
-                style={
-                  theme === opt.value
-                    ? { background: 'var(--bg)', color: 'var(--text)', borderRadius: 6 }
-                    : { background: 'transparent', color: 'var(--hint)' }
-                }
-              >
-                {opt.icon}
-              </button>
-            ))}
-          </div>
+          {collapsed ? (
+            <button
+              onClick={cycleTheme}
+              title={`Theme: ${theme}`}
+              className="flex items-center justify-center py-2 w-full rounded-lg transition-all hover:text-[var(--text)]"
+              style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}
+            >
+              {THEME_ICONS[theme]}
+            </button>
+          ) : (
+            <div
+              className="flex items-center rounded-lg overflow-hidden"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface2)' }}
+            >
+              {THEME_CYCLE.map(t => (
+                <button
+                  key={t}
+                  title={t}
+                  onClick={() => setTheme(t)}
+                  className="flex-1 flex items-center justify-center py-1.5 transition-all"
+                  style={
+                    theme === t
+                      ? { background: 'var(--bg)', color: 'var(--text)', borderRadius: 6 }
+                      : { background: 'transparent', color: 'var(--hint)' }
+                  }
+                >
+                  {THEME_ICONS[t]}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Sign out */}
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold w-full transition-all hover:text-[var(--text)]"
+            title="Sign out"
+            className={cn(
+              'flex items-center rounded-lg text-xs font-bold w-full transition-all hover:text-[var(--text)]',
+              collapsed ? 'justify-center py-2' : 'gap-2.5 px-3 py-2'
+            )}
             style={{ color: 'var(--hint)', border: '1px solid transparent' }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
             </svg>
-            Sign out
+            <AnimatePresence initial={false}>
+              {!collapsed && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.15 }}
+                  style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
+                >
+                  Sign out
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* Main content */}
-      <main className="flex flex-1 overflow-hidden">
-        <div className="flex flex-col flex-1 overflow-hidden">
-          {children}
+      <main className="flex flex-1 overflow-hidden min-w-0">
+        {/* Page area with slide transitions */}
+        <div className="flex flex-col flex-1 overflow-hidden relative min-w-0">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={pathname}
+              className="flex flex-col overflow-hidden"
+              style={{ position: 'absolute', inset: 0 }}
+              initial={{ opacity: 0, x: navDir.current * 28 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -navDir.current * 28 }}
+              transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
+        {/* Right panel */}
         {rightPanel && (
           <aside
             className="hidden lg:flex flex-col overflow-hidden flex-shrink-0"
@@ -187,7 +309,7 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
         )}
       </main>
 
-      {/* Bottom nav — mobile only */}
+      {/* Bottom nav — mobile */}
       <nav
         className="lg:hidden fixed bottom-0 left-0 right-0 flex"
         style={{ background: 'var(--bg)', borderTop: '1px solid var(--border)', paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -195,15 +317,15 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
         {navItems.map(item => {
           const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
           return (
-            <Link
+            <button
               key={item.href}
-              href={item.href}
+              onClick={() => navigateTo(item.href)}
               className="flex-1 flex flex-col items-center gap-1 py-2.5 text-xs font-bold transition-all"
               style={{ color: active ? 'var(--text)' : 'var(--muted)' }}
             >
               {item.icon}
               {item.label}
-            </Link>
+            </button>
           )
         })}
       </nav>

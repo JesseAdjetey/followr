@@ -4,9 +4,11 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AppShell } from '@/components/AppShell'
+import { DraggableNavPill } from '@/components/DraggableNavPill'
 import { FilterTabs, type FilterTab } from '@/components/feed/FilterTabs'
 import { ThreadCard } from '@/components/feed/ThreadCard'
 import { NewEmailBanner } from '@/components/feed/NewEmailBanner'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { useThreads } from '@/hooks/useThreads'
 import { useSettings } from '@/hooks/useSettings'
 import type { ThreadWithUrgency, UrgencyGroup } from '@/types'
@@ -68,22 +70,27 @@ export default function FeedPage() {
     <AppShell>
       {/* Top bar */}
       <div
-        className="flex items-center justify-between px-4 py-3.5"
+        className="flex items-center justify-between px-4"
         style={{ background: 'var(--bg)', minHeight: 52 }}
       >
-        <span className="font-semibold lg:hidden" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Followr</span>
-        <span className="hidden lg:block font-semibold" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Feed</span>
+        {/* Mobile title */}
+        <span className="font-bold lg:hidden" style={{ fontSize: 13 }}>Followr</span>
+        {/* Desktop — draggable nav pill */}
+        <div className="hidden lg:flex">
+          <DraggableNavPill />
+        </div>
+
         <div className="flex items-center gap-2">
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="text-xs font-medium px-2.5 py-1 rounded-full transition-opacity hover:opacity-70 flex items-center gap-1"
-            style={{ background: 'var(--surface2)', color: 'var(--muted)', fontSize: 10, opacity: syncing ? 0.5 : 1 }}
+            className="text-xs font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-70 flex items-center gap-1"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--muted)', fontSize: 10, opacity: syncing ? 0.5 : 1 }}
             title="Sync Gmail now"
           >
             <svg
               width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-              style={{ transform: syncing ? 'rotate(360deg)' : undefined, transition: syncing ? 'transform 0.6s linear' : undefined }}
+              className={syncing ? 'animate-spin' : ''}
             >
               <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
               <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -92,10 +99,10 @@ export default function FeedPage() {
           </button>
           <Link
             href="/settings"
-            className="text-xs font-mono px-2.5 py-1 rounded-full transition-opacity hover:opacity-70"
-            style={{ background: 'var(--surface2)', color: 'var(--muted)', fontSize: 10 }}
+            className="text-xs font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-70"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--muted)', fontSize: 10 }}
           >
-            {settings?.watched_cc_address || 'Set CC address →'}
+            {settings?.watched_cc_address || 'Set CC →'}
           </Link>
         </div>
       </div>
@@ -111,14 +118,28 @@ export default function FeedPage() {
       {/* Thread list */}
       <div className="flex-1 overflow-y-auto px-4 py-3 pb-20 lg:pb-4 flex flex-col gap-2">
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-5 h-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+          <div className="flex flex-col gap-2">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="rounded-xl p-3.5 flex flex-col gap-2.5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <div className="flex items-start justify-between gap-2">
+                  <Skeleton className="h-4 flex-1" style={{ maxWidth: '65%' }} />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-40" />
+                <div className="flex items-center gap-1.5">
+                  {[...Array(3)].map((_, j) => (
+                    <Skeleton key={j} className="w-2 h-2 rounded-full" style={{ borderRadius: '50%' }} />
+                  ))}
+                  <Skeleton className="h-3 w-24 ml-1" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {!loading && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-2">
-            <p className="text-sm font-medium" style={{ color: 'var(--muted)' }}>No threads here</p>
+            <p className="text-sm font-bold" style={{ color: 'var(--muted)' }}>No threads here</p>
             <p className="text-xs" style={{ color: 'var(--hint)' }}>
               CC your watched address on an email to get started
             </p>
@@ -131,7 +152,7 @@ export default function FeedPage() {
           return (
             <div key={group}>
               <p
-                className="text-xs font-semibold uppercase tracking-widest mb-2 mt-1"
+                className="text-xs font-bold uppercase tracking-widest mb-2 mt-1"
                 style={{ color: 'var(--hint)', letterSpacing: '0.07em' }}
               >
                 {SECTION_LABELS[group]}

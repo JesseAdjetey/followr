@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { AppShell } from '@/components/AppShell'
+import { DraggableNavPill } from '@/components/DraggableNavPill'
 import { StepCard } from '@/components/setup/StepCard'
 import { useSettings } from '@/hooks/useSettings'
 import { useTemplates } from '@/hooks/useTemplates'
@@ -93,10 +94,10 @@ export default function SettingsPage() {
     <AppShell>
       {/* Top bar */}
       <div
-        className="flex items-center justify-between px-4 py-3.5"
+        className="flex items-center px-4"
         style={{ background: 'var(--bg)', minHeight: 52 }}
       >
-        <span className="font-semibold" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Settings</span>
+        <DraggableNavPill />
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-6 pb-20 lg:pb-6 max-w-lg mx-auto w-full">

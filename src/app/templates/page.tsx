@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { AppShell } from '@/components/AppShell'
+import { DraggableNavPill } from '@/components/DraggableNavPill'
 import { TemplateCard } from '@/components/templates/TemplateCard'
 import { TemplateEditor } from '@/components/templates/TemplateEditor'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { useTemplates } from '@/hooks/useTemplates'
 import type { Template } from '@/types'
 
@@ -30,24 +32,39 @@ export default function TemplatesPage() {
       <div className="flex flex-col h-full overflow-hidden" style={{ background: 'var(--bg)' }}>
         {/* Top bar */}
         <div
-          className="flex items-center justify-between px-4 py-3.5"
-          style={{ background: 'var(--bg)' }}
+          className="flex items-center justify-between px-4"
+          style={{ background: 'var(--bg)', minHeight: 52 }}
         >
-          <span className="font-semibold" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Templates</span>
+          <DraggableNavPill />
           <button
             onClick={() => setEditing('new')}
-            className="text-sm font-semibold px-4 py-2 rounded-xl"
-            style={{ background: '#2563EB', color: '#fff' }}
+            className="text-xs font-bold px-3 py-1.5 rounded-lg"
+            style={{ background: 'var(--text)', color: 'var(--bg)' }}
           >
-            + New template
+            + New
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-20 lg:pb-4">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-5 h-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+            <div className="grid gap-3 lg:grid-cols-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="rounded-xl p-4 flex flex-col gap-2.5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <div className="flex items-start justify-between gap-2">
+                    <Skeleton className="h-4 w-32" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-3 w-8" />
+                      <Skeleton className="h-3 w-14" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
+                  <div className="flex gap-1 pt-1">
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : templates.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
