@@ -20,8 +20,8 @@ export function SequenceTimeline({ steps }: SequenceTimelineProps) {
         const circleStyle = isDone
           ? { background: '#16A34A', borderColor: '#16A34A' }
           : isCurrent
-          ? { background: '#fff', borderColor: '#2563EB', borderWidth: 2 }
-          : { background: '#fff', borderColor: '#E5E3DF', borderWidth: 1.5 }
+          ? { background: 'var(--bg)', borderColor: '#2563EB', borderWidth: 2 }
+          : { background: 'var(--bg)', borderColor: 'var(--border2)', borderWidth: 1.5 }
 
         const lineColor = isDone ? '#16A34A' : '#E5E3DF'
 

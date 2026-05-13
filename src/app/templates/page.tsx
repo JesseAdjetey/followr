@@ -31,7 +31,7 @@ export default function TemplatesPage() {
         {/* Top bar */}
         <div
           className="flex items-center justify-between px-4 py-3.5"
-          style={{ background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.08)' }}
+          style={{ background: 'var(--bg)' }}
         >
           <span className="font-semibold" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Templates</span>
           <button
@@ -85,7 +85,7 @@ export default function TemplatesPage() {
         >
           <div
             className="w-full lg:max-w-lg rounded-t-2xl lg:rounded-2xl p-5 flex flex-col gap-0 max-h-[90vh] overflow-y-auto"
-            style={{ background: '#fff' }}
+            style={{ background: 'var(--surface)' }}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold" style={{ fontSize: 16, letterSpacing: '-0.01em' }}>

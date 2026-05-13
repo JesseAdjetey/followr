@@ -96,7 +96,7 @@ export default function ThreadDetailPage() {
         {/* Top bar */}
         <div
           className="flex items-center gap-3 px-4 py-3"
-          style={{ background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.08)' }}
+          style={{ background: 'var(--bg)' }}
         >
           <button
             onClick={() => router.push('/')}
@@ -113,14 +113,14 @@ export default function ThreadDetailPage() {
 
         <div className="flex-1 overflow-y-auto pb-20 lg:pb-4">
           {/* Sequence timeline */}
-          <div style={{ background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+          <div style={{ background: 'var(--bg)' }}>
             <SequenceTimeline steps={steps.sort((a, b) => a.step_number - b.step_number)} />
           </div>
 
           {/* Contact bar */}
           <div
             className="flex items-center gap-3 px-4 py-3 mx-4 mt-4 rounded-xl"
-            style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
           >
             <Avatar name={thread.recipient_name || thread.recipient_email} />
             <div className="flex-1 min-w-0">
@@ -133,7 +133,7 @@ export default function ThreadDetailPage() {
               <button
                 onClick={handleSnooze}
                 className="text-xs px-3 py-1.5 rounded-lg font-medium"
-                style={{ background: 'var(--surface2)', color: 'var(--muted)', border: '1px solid rgba(0,0,0,0.10)' }}
+                style={{ background: 'var(--surface2)', color: 'var(--muted)', border: '1px solid var(--border)' }}
               >
                 Snooze
               </button>

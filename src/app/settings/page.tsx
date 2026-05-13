@@ -94,7 +94,7 @@ export default function SettingsPage() {
       {/* Top bar */}
       <div
         className="flex items-center justify-between px-4 py-3.5"
-        style={{ background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.08)', minHeight: 52 }}
+        style={{ background: 'var(--bg)', minHeight: 52 }}
       >
         <span className="font-semibold" style={{ fontSize: 18, letterSpacing: '-0.02em' }}>Settings</span>
       </div>
@@ -108,7 +108,7 @@ export default function SettingsPage() {
           <div className="flex flex-col gap-6">
 
             {/* CC Address */}
-            <div className="bg-white rounded-2xl p-5 flex flex-col gap-4" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
+            <div className="rounded-2xl p-5 flex flex-col gap-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
               <div>
                 <p className="font-semibold text-sm" style={{ letterSpacing: '-0.01em' }}>Watched CC address</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
@@ -131,7 +131,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Default send mode */}
-            <div className="bg-white rounded-2xl p-5 flex flex-col gap-4" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
+            <div className="rounded-2xl p-5 flex flex-col gap-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
               <div>
                 <p className="font-semibold text-sm" style={{ letterSpacing: '-0.01em' }}>Default send mode</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
@@ -149,7 +149,7 @@ export default function SettingsPage() {
                     className="flex items-start gap-3 px-4 py-3 rounded-xl text-left transition-all"
                     style={{
                       border: sendMode === opt.value ? '1.5px solid var(--accent)' : '1.5px solid rgba(0,0,0,0.10)',
-                      background: sendMode === opt.value ? 'var(--accent-bg)' : '#fff',
+                      background: sendMode === opt.value ? 'var(--accent-bg)' : 'var(--surface)',
                     }}
                   >
                     <span className="mt-0.5 w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center" style={{ borderColor: sendMode === opt.value ? 'var(--accent)' : 'rgba(0,0,0,0.2)' }}>
@@ -165,7 +165,7 @@ export default function SettingsPage() {
             </div>
 
             {/* ── Auto Follow-up ── */}
-            <div className="bg-white rounded-2xl p-5 flex flex-col gap-4" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
+            <div className="rounded-2xl p-5 flex flex-col gap-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
               {/* Header + toggle */}
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -202,7 +202,7 @@ export default function SettingsPage() {
                           className="flex-1 py-2 text-xs font-medium transition-all"
                           style={
                             autoSendMode === opt.value
-                              ? { background: '#fff', color: 'var(--text)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }
+                              ? { background: 'var(--bg)', color: 'var(--text)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }
                               : { background: 'transparent', color: 'var(--muted)' }
                           }
                         >
@@ -240,7 +240,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Notifications */}
-            <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
+            <div className="rounded-2xl p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="font-semibold text-sm" style={{ letterSpacing: '-0.01em' }}>Push notifications</p>
@@ -262,7 +262,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Gmail connection */}
-            <div className="bg-white rounded-2xl p-5 flex flex-col gap-3" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
+            <div className="rounded-2xl p-5 flex flex-col gap-3" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
               <div>
                 <p className="font-semibold text-sm" style={{ letterSpacing: '-0.01em' }}>Gmail connection</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Space_Mono } from 'next/font/google'
+import { ThemeProvider } from '@/components/ThemeProvider'
 import './globals.css'
 
 const spaceMono = Space_Mono({
@@ -26,7 +27,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={spaceMono.variable}>
-      <body>{children}</body>
+      <head>
+        {/* Apply theme before first paint to avoid flash */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('followr-theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark')}catch(e){}` }} />
+      </head>
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   )
 }

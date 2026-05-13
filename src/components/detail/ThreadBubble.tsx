@@ -19,9 +19,9 @@ export function ThreadBubble({ body, sentAt, direction, senderName }: ThreadBubb
         <div
           className="rounded-xl px-3.5 py-2.5 text-sm leading-relaxed"
           style={{
-            background: isSent ? '#2563EB' : '#fff',
+            background: isSent ? '#2563EB' : 'var(--surface)',
             color: isSent ? '#fff' : 'var(--text)',
-            border: isSent ? 'none' : '1px solid rgba(0,0,0,0.08)',
+            border: isSent ? 'none' : '1px solid var(--border)',
             whiteSpace: 'pre-wrap',
           }}
         >

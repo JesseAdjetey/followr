@@ -1,10 +1,10 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/cn'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { useTheme, type Theme } from './ThemeProvider'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -14,6 +14,7 @@ interface AppShellProps {
 export function AppShell({ children, rightPanel }: AppShellProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
 
   async function handleSignOut() {
     const supabase = createBrowserSupabaseClient()
@@ -57,6 +58,40 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
     },
   ]
 
+  const themeOptions: { value: Theme; title: string; icon: React.ReactNode }[] = [
+    {
+      value: 'light',
+      title: 'Light',
+      icon: (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      ),
+    },
+    {
+      value: 'system',
+      title: 'System',
+      icon: (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      ),
+    },
+    {
+      value: 'dark',
+      title: 'Dark',
+      icon: (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      ),
+    },
+  ]
+
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
       {/* Sidebar — desktop only */}
@@ -66,14 +101,10 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
       >
         {/* Logo */}
         <div className="px-5 mb-8">
-          <Image
-            src="/Followr_WordxIcon_Logo_Black.png"
-            alt="Followr"
-            width={110}
-            height={36}
-            style={{ objectFit: 'contain', objectPosition: 'left' }}
-            priority
-          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/Followr_WordxIcon_Logo_Black.png" alt="Followr" className="logo-light" style={{ width: 110, height: 'auto', objectFit: 'contain' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/Followr_WordxIcon_Logo_White.png" alt="Followr" className="logo-dark" style={{ width: 110, height: 'auto', objectFit: 'contain' }} />
         </div>
 
         {/* Nav */}
@@ -86,13 +117,11 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
                 href={item.href}
                 className={cn(
                   'flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold transition-all',
-                  active
-                    ? 'text-[#1B222B]'
-                    : 'text-[#888580] hover:text-[#1B222B]'
+                  active ? 'text-[var(--text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
                 )}
                 style={
                   active
-                    ? { border: '1px solid rgba(27,34,43,0.18)', background: 'rgba(27,34,43,0.04)' }
+                    ? { border: '1px solid var(--border2)', background: 'rgba(27,34,43,0.04)' }
                     : { border: '1px solid transparent' }
                 }
               >
@@ -103,10 +132,33 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
           })}
         </nav>
 
-        <div className="mt-auto px-3">
+        <div className="mt-auto px-3 flex flex-col gap-3">
+          {/* Theme toggle */}
+          <div
+            className="flex items-center rounded-lg overflow-hidden mx-0"
+            style={{ border: '1px solid var(--border)', background: 'var(--surface2)' }}
+          >
+            {themeOptions.map(opt => (
+              <button
+                key={opt.value}
+                title={opt.title}
+                onClick={() => setTheme(opt.value)}
+                className="flex-1 flex items-center justify-center py-1.5 transition-all"
+                style={
+                  theme === opt.value
+                    ? { background: 'var(--bg)', color: 'var(--text)', borderRadius: 6 }
+                    : { background: 'transparent', color: 'var(--hint)' }
+                }
+              >
+                {opt.icon}
+              </button>
+            ))}
+          </div>
+
+          {/* Sign out */}
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold w-full transition-all hover:text-[#1B222B]"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold w-full transition-all hover:text-[var(--text)]"
             style={{ color: 'var(--hint)', border: '1px solid transparent' }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -121,16 +173,14 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
 
       {/* Main content */}
       <main className="flex flex-1 overflow-hidden">
-        {/* Feed / content area */}
         <div className="flex flex-col flex-1 overflow-hidden">
           {children}
         </div>
 
-        {/* Right detail panel — desktop only, only when content provided */}
         {rightPanel && (
           <aside
             className="hidden lg:flex flex-col overflow-hidden flex-shrink-0"
-            style={{ width: 360, background: 'var(--bg)', borderLeft: '1px solid rgba(27,34,43,0.08)' }}
+            style={{ width: 360, background: 'var(--bg)', borderLeft: '1px solid var(--border)' }}
           >
             {rightPanel}
           </aside>
@@ -140,7 +190,7 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
       {/* Bottom nav — mobile only */}
       <nav
         className="lg:hidden fixed bottom-0 left-0 right-0 flex"
-        style={{ background: 'var(--bg)', borderTop: '1px solid rgba(27,34,43,0.08)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+        style={{ background: 'var(--bg)', borderTop: '1px solid var(--border)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {navItems.map(item => {
           const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
@@ -149,7 +199,7 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
               key={item.href}
               href={item.href}
               className="flex-1 flex flex-col items-center gap-1 py-2.5 text-xs font-bold transition-all"
-              style={{ color: active ? '#1B222B' : 'var(--muted)' }}
+              style={{ color: active ? 'var(--text)' : 'var(--muted)' }}
             >
               {item.icon}
               {item.label}

@@ -40,7 +40,7 @@ export function TemplateCard({ template, onEdit, onDuplicate, onDelete }: Templa
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-2.5 transition-all hover:shadow-sm"
-      style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}
+      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
     >
       <div className="flex items-start justify-between gap-2">
         <p className="font-semibold text-sm" style={{ letterSpacing: '-0.01em' }}>{template.name}</p>

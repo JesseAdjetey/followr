@@ -36,14 +36,15 @@ export function ThreadCard({ thread, selected, onClick }: ThreadCardProps) {
     <div
       onClick={onClick}
       className={cn(
-        'relative bg-white cursor-pointer transition-all',
+        'relative cursor-pointer transition-all',
         hasAccent ? 'rounded-r-xl rounded-l-none' : 'rounded-xl',
         selected && 'ring-2 ring-accent ring-offset-1'
       )}
       style={{
         borderLeft: hasAccent ? `3px solid ${accentColor}` : undefined,
-        border: !hasAccent ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(0,0,0,0.08)',
-        borderLeftColor: hasAccent ? accentColor : 'rgba(0,0,0,0.08)',
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderLeftColor: hasAccent ? accentColor : undefined,
         boxShadow: selected ? '0 0 0 2px #EEF4FF' : undefined,
       }}
     >
