@@ -10,7 +10,10 @@ import { ThreadBubble } from '@/components/detail/ThreadBubble'
 import { Avatar } from '@/components/ui/Avatar'
 import { Pill } from '@/components/ui/Pill'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { NavPill } from '@/components/NavPill'
 import { enrichThread, getStatusLabel } from '@/lib/urgency'
+import { useThreads } from '@/hooks/useThreads'
+import { navDir } from '@/lib/navDirection'
 import type { ThreadWithUrgency } from '@/types'
 
 export default function ThreadDetailPage() {
@@ -19,6 +22,7 @@ export default function ThreadDetailPage() {
   const [thread, setThread] = useState<ThreadWithUrgency | null>(null)
   const [loading, setLoading] = useState(true)
   const [approving, setApproving] = useState(false)
+  const { threads: allThreads } = useThreads()
 
   useEffect(() => {
     async function load() {
@@ -127,6 +131,17 @@ export default function ThreadDetailPage() {
     thread.status === 'replied' ? 'replied' :
     thread.status === 'completed' ? 'completed' : 'waiting'
 
+  // Adjacent thread navigation
+  const activeThreads = allThreads.filter(t => t.status !== 'pending_setup')
+  const threadIdx = activeThreads.findIndex(t => t.id === thread.id)
+  const prevThread = threadIdx > 0 ? activeThreads[threadIdx - 1] : undefined
+  const nextThread = threadIdx < activeThreads.length - 1 ? activeThreads[threadIdx + 1] : undefined
+
+  function goToThread(id: string, dir: number) {
+    navDir.current = dir
+    router.push(`/thread/${id}`)
+  }
+
   return (
     <AppShell>
       <div className="flex flex-col h-full overflow-hidden" style={{ background: 'var(--bg)' }}>
@@ -143,31 +158,25 @@ export default function ThreadDetailPage() {
             ← Back
           </button>
 
-          {/* Centered title pill — max 50% of content area */}
+          {/* Centered thread nav pill — max 50% of content area, swipeable between threads */}
           <div
             style={{
               position: 'absolute',
               left: '50%',
               transform: 'translateX(-50%)',
               maxWidth: '50%',
+              width: '50%',
               zIndex: 0,
             }}
           >
-            <div
-              className="flex items-center px-3.5 py-1.5 rounded-lg"
-              style={{
-                border: '1px solid var(--border2)',
-                background: 'var(--surface)',
-                maxWidth: '100%',
-              }}
-            >
-              <span
-                className="text-xs font-bold truncate"
-                style={{ color: 'var(--text)', letterSpacing: '0.01em' }}
-              >
-                {thread.subject || '(no subject)'}
-              </span>
-            </div>
+            <NavPill
+              currentLabel={thread.subject || '(no subject)'}
+              prevLabel={prevThread?.subject || undefined}
+              nextLabel={nextThread?.subject || undefined}
+              onPrev={prevThread ? () => goToThread(prevThread.id, -1) : undefined}
+              onNext={nextThread ? () => goToThread(nextThread.id, 1) : undefined}
+              style={{ width: '100%' }}
+            />
           </div>
 
           <div className="flex-shrink-0 z-10">

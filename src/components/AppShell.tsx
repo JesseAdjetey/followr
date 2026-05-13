@@ -119,44 +119,53 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
         className="hidden lg:flex flex-col py-5 flex-shrink-0 relative overflow-hidden"
         style={{ background: 'var(--bg)' }}
       >
-        {/* Logo */}
-        <div className={cn('mb-8 flex items-center', collapsed ? 'px-4 justify-center' : 'px-5 justify-between')}>
-          <motion.div animate={{ opacity: 1 }} className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/followr_black_nobg.png" alt="Followr" className="logo-light flex-shrink-0" style={{ width: 28, height: 28, objectFit: 'contain' }} />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/followr_white_nobg.png" alt="Followr" className="logo-dark flex-shrink-0" style={{ width: 28, height: 28, objectFit: 'contain' }} />
-            <AnimatePresence initial={false}>
-              {!collapsed && (
-                <motion.div
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.18 }}
-                  style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/Follow_Word_Logo_Black.png" alt="" className="logo-light" style={{ height: 18, width: 'auto', objectFit: 'contain' }} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/Follow_Word_Logo_White.png" alt="" className="logo-dark" style={{ height: 18, width: 'auto', objectFit: 'contain' }} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+        {/* Logo + single collapse toggle */}
+        <div className="mb-8 px-3 flex items-center justify-between">
+          {/* Logo: full word+icon when expanded, icon-only when collapsed */}
+          <AnimatePresence mode="wait" initial={false}>
+            {collapsed ? (
+              <motion.div
+                key="icon"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/followr_black_nobg.png" alt="Followr" className="logo-light" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/followr_white_nobg.png" alt="Followr" className="logo-dark" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/Followr_WordxIcon_Logo_Black.png" alt="Followr" className="logo-light" style={{ width: 120, height: 'auto', objectFit: 'contain' }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/Followr_WordxIcon_Logo_White.png" alt="Followr" className="logo-dark" style={{ width: 120, height: 'auto', objectFit: 'contain' }} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Collapse toggle — only visible when expanded */}
-          {!collapsed && (
-            <button
-              onClick={toggleCollapsed}
-              title="Collapse sidebar"
-              className="transition-opacity hover:opacity-60"
-              style={{ color: 'var(--hint)', flexShrink: 0 }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="15 18 9 12 15 6"/>
-              </svg>
-            </button>
-          )}
+          {/* Single collapse/expand toggle — always in the same spot */}
+          <button
+            onClick={toggleCollapsed}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="flex-shrink-0 transition-opacity hover:opacity-60 rounded-md p-1"
+            style={{ color: 'var(--hint)' }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {collapsed
+                ? <polyline points="9 18 15 12 9 6"/>
+                : <polyline points="15 18 9 12 15 6"/>
+              }
+            </svg>
+          </button>
         </div>
 
         {/* Nav */}
@@ -200,20 +209,6 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
 
         {/* Bottom controls */}
         <div className="mt-auto px-2 flex flex-col gap-2">
-          {/* Expand button when collapsed */}
-          {collapsed && (
-            <button
-              onClick={toggleCollapsed}
-              title="Expand sidebar"
-              className="flex items-center justify-center py-2 w-full rounded-lg transition-all hover:text-[var(--text)]"
-              style={{ color: 'var(--hint)', border: '1px solid transparent' }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </button>
-          )}
-
           {/* Theme toggle */}
           {collapsed ? (
             <button

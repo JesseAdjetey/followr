@@ -14,7 +14,7 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-3"
-      style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}
+      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -45,7 +45,7 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
             className="rounded-lg px-3 py-2 text-sm font-medium w-20 outline-none"
             style={{
               background: 'var(--surface2)',
-              border: '1px solid rgba(0,0,0,0.10)',
+              border: '1px solid var(--border)',
               color: 'var(--text)',
             }}
           />
@@ -55,7 +55,7 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
             className="rounded-lg px-3 py-2 text-sm font-medium flex-1 outline-none"
             style={{
               background: 'var(--surface2)',
-              border: '1px solid rgba(0,0,0,0.10)',
+              border: '1px solid var(--border)',
               color: 'var(--text)',
             }}
           >
@@ -70,14 +70,14 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
         <label className="text-xs font-medium block mb-1.5" style={{ color: 'var(--muted)' }}>Message</label>
         <div
           className="flex rounded-lg overflow-hidden mb-2"
-          style={{ border: '1px solid rgba(0,0,0,0.10)', background: 'var(--surface2)' }}
+          style={{ border: '1px solid var(--border)', background: 'var(--surface2)' }}
         >
           <button
             onClick={() => onChange(index, 'message_source', 'template')}
             className="flex-1 py-1.5 text-xs font-medium transition-all"
             style={
               step.message_source === 'template'
-                ? { background: '#fff', color: 'var(--text)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }
+                ? { background: 'var(--bg)', color: 'var(--text)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }
                 : { background: 'transparent', color: 'var(--muted)' }
             }
           >
@@ -88,7 +88,7 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
             className="flex-1 py-1.5 text-xs font-medium transition-all"
             style={
               step.message_source === 'custom'
-                ? { background: '#fff', color: 'var(--text)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }
+                ? { background: 'var(--bg)', color: 'var(--text)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }
                 : { background: 'transparent', color: 'var(--muted)' }
             }
           >
@@ -104,7 +104,7 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
               className="w-full rounded-lg px-3 py-2 text-sm outline-none"
               style={{
                 background: 'var(--surface2)',
-                border: '1px solid rgba(0,0,0,0.10)',
+                border: '1px solid var(--border)',
                 color: step.template_id ? 'var(--text)' : 'var(--hint)',
               }}
             >
@@ -119,7 +119,7 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
               return (
                 <div
                   className="rounded-lg px-3 py-2.5 text-sm leading-relaxed relative"
-                  style={{ background: 'var(--surface2)', border: '1px solid rgba(0,0,0,0.08)', color: 'var(--muted)' }}
+                  style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--muted)' }}
                 >
                   <p className="whitespace-pre-wrap pr-16">{tpl.body}</p>
                   <button
@@ -128,7 +128,7 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
                       onChange(index, 'message_source', 'custom')
                     }}
                     className="absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-md"
-                    style={{ background: '#fff', color: 'var(--accent)', border: '1px solid rgba(0,0,0,0.10)' }}
+                    style={{ background: 'var(--bg)', color: 'var(--accent)', border: '1px solid var(--border)' }}
                   >
                     Edit
                   </button>
@@ -145,7 +145,7 @@ export function StepCard({ step, index, templates, onChange, onRemove }: StepCar
             className="w-full rounded-lg px-3 py-2 text-sm resize-none outline-none leading-relaxed"
             style={{
               background: 'var(--surface2)',
-              border: '1px solid rgba(0,0,0,0.10)',
+              border: '1px solid var(--border)',
               color: 'var(--text)',
             }}
           />
