@@ -14,7 +14,9 @@ import { NavPill } from '@/components/NavPill'
 import { enrichThread, getStatusLabel } from '@/lib/urgency'
 import { useThreads } from '@/hooks/useThreads'
 import { navDir } from '@/lib/navDirection'
-import type { ThreadWithUrgency } from '@/types'
+import type { ThreadWithUrgency, UrgencyGroup } from '@/types'
+
+const URGENCY_ORDER: UrgencyGroup[] = ['overdue', 'today', 'this_week', 'later', 'replied', 'completed']
 
 export default function ThreadDetailPage() {
   const params = useParams()
@@ -131,8 +133,10 @@ export default function ThreadDetailPage() {
     thread.status === 'replied' ? 'replied' :
     thread.status === 'completed' ? 'completed' : 'waiting'
 
-  // Adjacent thread navigation
-  const activeThreads = allThreads.filter(t => t.status !== 'pending_setup')
+  // Adjacent thread navigation — sorted by urgency so order matches the feed
+  const activeThreads = allThreads
+    .filter(t => t.status !== 'pending_setup')
+    .sort((a, b) => URGENCY_ORDER.indexOf(a.urgency) - URGENCY_ORDER.indexOf(b.urgency))
   const threadIdx = activeThreads.findIndex(t => t.id === thread.id)
   const prevThread = threadIdx > 0 ? activeThreads[threadIdx - 1] : undefined
   const nextThread = threadIdx < activeThreads.length - 1 ? activeThreads[threadIdx + 1] : undefined

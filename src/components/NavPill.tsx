@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { motion, useMotionValue, animate } from 'framer-motion'
 
 const DRAG_THRESHOLD = 56
@@ -23,6 +24,7 @@ export function NavPill({
   style,
 }: NavPillProps) {
   const x = useMotionValue(0)
+  const trackRef = useRef<HTMLDivElement>(null)
   const canGoPrev = !!onPrev
   const canGoNext = !!onNext
 
@@ -62,6 +64,7 @@ export function NavPill({
 
       {/* Draggable text track — only this moves */}
       <div
+        ref={trackRef}
         style={{
           position: 'relative',
           flex: 1,
@@ -95,10 +98,11 @@ export function NavPill({
             touchAction: 'none',
           }}
           onDragEnd={(_, info) => {
+            const commitDist = (trackRef.current?.offsetWidth ?? 140) * 0.85
             if (info.offset.x < -DRAG_THRESHOLD && canGoNext) {
-              onNext?.()
+              animate(x, -commitDist, { duration: 0.12, ease: [0.4, 0, 0.2, 1] }).then(() => onNext?.())
             } else if (info.offset.x > DRAG_THRESHOLD && canGoPrev) {
-              onPrev?.()
+              animate(x, commitDist, { duration: 0.12, ease: [0.4, 0, 0.2, 1] }).then(() => onPrev?.())
             } else {
               animate(x, 0, { type: 'spring', stiffness: 480, damping: 34 })
             }

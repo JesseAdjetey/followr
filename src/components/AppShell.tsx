@@ -44,10 +44,22 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
   const { theme, setTheme } = useTheme()
   const [collapsed, setCollapsed] = useState(false)
 
+  const [systemDark, setSystemDark] = useState(false)
+
   useEffect(() => {
     const saved = localStorage.getItem('followr-sidebar-collapsed')
     if (saved === '1') setCollapsed(true)
   }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    setSystemDark(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setSystemDark(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  const isDark = theme === 'dark' || (theme === 'system' && systemDark)
 
   function toggleCollapsed() {
     setCollapsed(v => {
@@ -132,9 +144,11 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
                 transition={{ duration: 0.15 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/followr_black_nobg.png" alt="Followr" className="logo-light" style={{ width: 28, height: 28, objectFit: 'contain' }} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/followr_white_nobg.png" alt="Followr" className="logo-dark" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                <img
+                  src={isDark ? '/followr_white_nobg.png' : '/followr_black_nobg.png'}
+                  alt="Followr"
+                  style={{ width: 28, height: 28, objectFit: 'contain' }}
+                />
               </motion.div>
             ) : (
               <motion.div
