@@ -121,7 +121,7 @@ export default function SetupPage() {
         {/* Top bar */}
         <div
           className="flex items-center gap-3 px-4 py-3"
-          style={{ background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.08)' }}
+          style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
         >
           <button
             onClick={() => router.push('/')}
@@ -180,7 +180,7 @@ export default function SetupPage() {
                 onClick={addStep}
                 className="py-3 text-sm font-medium rounded-xl transition-all hover:bg-accent-bg"
                 style={{
-                  border: '1.5px dashed rgba(0,0,0,0.15)',
+                  border: '1.5px dashed var(--border2)',
                   color: 'var(--muted)',
                   background: 'transparent',
                 }}
@@ -194,7 +194,7 @@ export default function SetupPage() {
         {/* Fixed footer */}
         <div
           className="fixed bottom-0 left-0 right-0 lg:relative flex gap-3 px-4 py-3"
-          style={{ background: '#fff', borderTop: '1px solid rgba(0,0,0,0.08)', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+          style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
         >
           <button
             onClick={() => router.push('/')}

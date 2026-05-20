@@ -9,7 +9,7 @@ export function EmailPreview({ thread }: EmailPreviewProps) {
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-2"
-      style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)' }}
+      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
     >
       <p className="font-semibold text-sm leading-tight" style={{ letterSpacing: '-0.01em' }}>
         {thread.subject || '(no subject)'}
@@ -28,7 +28,7 @@ export function EmailPreview({ thread }: EmailPreviewProps) {
           {thread.recipient_email}
         </span>
       </div>
-      <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 8, marginTop: 4 }}>
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 4 }}>
         <p className="text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>
           {thread.email_snippet || 'No preview available'}
         </p>

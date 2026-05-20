@@ -9,7 +9,7 @@ interface ModeToggleProps {
 
 export function ModeToggle({ value, onChange }: ModeToggleProps) {
   return (
-    <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.12)', background: 'var(--surface2)' }}>
+    <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border2)', background: 'var(--surface2)' }}>
       <button
         onClick={() => onChange('auto_send')}
         className="flex-1 py-2.5 text-sm font-medium transition-all"
