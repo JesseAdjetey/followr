@@ -12,6 +12,9 @@ import crypto from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 
+// Called by another server with a secret; never static.
+export const dynamic = 'force-dynamic'
+
 // Statuses the scheduler already skips. Nothing is sent for a thread in one of
 // these, so stopping is a matter of moving it into one rather than adding a
 // new state and a database migration to go with it.

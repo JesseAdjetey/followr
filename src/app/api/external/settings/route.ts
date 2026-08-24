@@ -11,6 +11,9 @@ import crypto from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 
+// Called by another server with a secret; never static.
+export const dynamic = 'force-dynamic'
+
 function safeEqual(a: string, b: string): boolean {
   const ab = Buffer.from(a)
   const bb = Buffer.from(b)

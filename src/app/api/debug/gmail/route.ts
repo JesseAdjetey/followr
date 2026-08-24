@@ -3,6 +3,10 @@ import { createServiceSupabaseClient } from '@/lib/supabase-server'
 import { getOAuthClient } from '@/lib/gmail'
 import { google } from 'googleapis'
 
+// As with /api/debug: this reads the database and must never be evaluated at
+// build time, where the credentials are absent.
+export const dynamic = 'force-dynamic'
+
 const USER_ID = 'f4d5d408-5708-4e28-8873-c9690402792f'
 
 export async function GET() {

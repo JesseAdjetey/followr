@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
 
+// Reads the database on every call, so there is nothing to prerender. Next
+// otherwise runs this GET at build time, where the Supabase credentials do not
+// exist, and the whole build fails on a debug endpoint.
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const supabase = createServiceSupabaseClient()
 
