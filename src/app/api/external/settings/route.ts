@@ -1,5 +1,6 @@
 // GET  /api/external/settings?email=... — what is Followr's state for this user
-// POST /api/external/settings           — set their watched CC address
+// POST /api/external/settings           — set the watched CC address, or turn
+//                                         auto follow-up on and off
 //
 // So another app can check the two sides agree without a person typing the
 // same address into both and getting silence when they differ.
@@ -95,23 +96,63 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null)
   const email: string | null = body?.email?.trim() || null
-  const watchedCcAddress: string | null = body?.watchedCcAddress?.trim()?.toLowerCase() || null
-
   if (!email) return NextResponse.json({ error: 'email is required' }, { status: 400 })
-  if (!watchedCcAddress || !watchedCcAddress.includes('@')) {
+
+  const watchedCcAddress: string | null = body?.watchedCcAddress?.trim()?.toLowerCase() || null
+  const enabled: boolean | null =
+    typeof body?.autoFollowUpEnabled === 'boolean' ? body.autoFollowUpEnabled : null
+
+  if (watchedCcAddress !== null && !watchedCcAddress.includes('@')) {
     return NextResponse.json({ error: 'watchedCcAddress must be an address' }, { status: 400 })
+  }
+  if (watchedCcAddress === null && enabled === null) {
+    return NextResponse.json(
+      { error: 'Give watchedCcAddress, autoFollowUpEnabled, or both' },
+      { status: 400 },
+    )
   }
 
   const found = await findUser(email)
   if (!found) return NextResponse.json({ updated: false, reason: 'no_account' })
 
   const { supabase, user } = found
-  const { error } = await supabase
+  const { data: current } = await supabase
     .from('settings')
-    .update({ watched_cc_address: watchedCcAddress })
+    .select('watched_cc_address, auto_followup_steps, gmail_refresh_token')
     .eq('user_id', user.id)
+    .single()
 
+  // Switching it on with nothing to send would leave a setting that reads as
+  // working and produces nothing. Refuse, and say which part is missing.
+  if (enabled === true) {
+    const steps = (current?.auto_followup_steps as unknown[] | null) ?? []
+    const address = watchedCcAddress ?? current?.watched_cc_address
+    if (!steps.length) {
+      return NextResponse.json(
+        { updated: false, reason: 'no_steps', detail: 'Configure the follow-up steps in Followr first.' },
+        { status: 409 },
+      )
+    }
+    if (!address) {
+      return NextResponse.json(
+        { updated: false, reason: 'no_address', detail: 'Set the watched Cc address first.' },
+        { status: 409 },
+      )
+    }
+    if (!current?.gmail_refresh_token) {
+      return NextResponse.json(
+        { updated: false, reason: 'no_gmail', detail: `Connect Gmail for ${email} in Followr first.` },
+        { status: 409 },
+      )
+    }
+  }
+
+  const patch: Record<string, unknown> = {}
+  if (watchedCcAddress !== null) patch.watched_cc_address = watchedCcAddress
+  if (enabled !== null) patch.auto_followup_enabled = enabled
+
+  const { error } = await supabase.from('settings').update(patch).eq('user_id', user.id)
   if (error) return NextResponse.json({ updated: false, reason: error.message }, { status: 500 })
 
-  return NextResponse.json({ updated: true, watchedCcAddress })
+  return NextResponse.json({ updated: true, ...patch })
 }
