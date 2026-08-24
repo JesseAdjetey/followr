@@ -18,6 +18,10 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/gmail/webhook') ||
     pathname.startsWith('/api/gmail/poll') ||
     pathname.startsWith('/api/cron') ||
+    // Called by another server with a shared secret, never by a browser with
+    // a session. Without this the middleware would redirect it to sign-in and
+    // the caller would get an HTML page where it expected JSON.
+    pathname.startsWith('/api/external') ||
     pathname.startsWith('/api/debug')
   ) {
     return NextResponse.next()
