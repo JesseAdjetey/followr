@@ -11,6 +11,7 @@ create table public.settings (
   watched_cc_address  text not null default '',
   default_send_mode   text not null default 'auto_send' check (default_send_mode in ('auto_send', 'requires_approval')),
   notifications_enabled boolean not null default true,
+  gmail_address       text,
   gmail_access_token  text,
   gmail_refresh_token text,
   gmail_token_expiry  timestamptz,
@@ -63,6 +64,14 @@ create table public.threads (
   send_mode         text not null default 'auto_send'
                     check (send_mode in ('auto_send', 'requires_approval')),
 
+  -- How this thread came to exist. Cc'd threads are auto-activated into the
+  -- account's default sequence; ones Followr sent itself must not be.
+  origin            text not null default 'cc'
+                    check (origin in ('cc', 'api')),
+
+  -- Claimed before an outbound send, so a retry cannot post a second copy.
+  idempotency_key   text,
+
   -- Status
   status            text not null default 'pending_setup'
                     check (status in (
@@ -72,7 +81,9 @@ create table public.threads (
                       'overdue',        -- manual, approval deadline missed
                       'replied',        -- recipient replied, sequence paused
                       'completed',      -- all steps sent, no reply
-                      'snoozed'         -- user deferred
+                      'snoozed',        -- user deferred
+                      'sending',        -- outbound claimed, outcome unknown
+                      'failed'          -- Gmail refused it; nothing was sent
                     )),
 
   snoozed_until     timestamptz,
@@ -90,6 +101,8 @@ create policy "Users can manage own threads"
   on public.threads for all using (auth.uid() = user_id);
 
 create index threads_user_status on public.threads(user_id, status);
+create unique index threads_idempotency on public.threads(user_id, idempotency_key)
+  where idempotency_key is not null;
 create index threads_user_updated on public.threads(user_id, updated_at desc);
 
 -- ── STEPS ───────────────────────────────────────────────────

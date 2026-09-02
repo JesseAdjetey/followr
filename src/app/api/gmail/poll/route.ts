@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
-import { isWatchedAddressCCd, extractEmail, extractName, isInvalidGrantError, clearGmailTokens, getOAuthClient } from '@/lib/gmail'
+import { isWatchedAddressCCd, isReplyFromRecipient, extractEmail, extractName, isInvalidGrantError, clearGmailTokens, getOAuthClient } from '@/lib/gmail'
 import { google } from 'googleapis'
 import { computeScheduledDates } from '@/lib/sequence'
 import type { StepDraft } from '@/types'
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   // Get all users with Gmail connected and a watched CC address
   const { data: settings } = await supabase
     .from('settings')
-    .select('user_id, watched_cc_address, gmail_access_token, gmail_refresh_token, gmail_token_expiry, auto_followup_enabled, auto_followup_send_mode, auto_followup_steps')
+    .select('user_id, gmail_address, watched_cc_address, gmail_access_token, gmail_refresh_token, gmail_token_expiry, auto_followup_enabled, auto_followup_send_mode, auto_followup_steps')
     .not('gmail_refresh_token', 'is', null)
     .not('watched_cc_address', 'is', null)
     .neq('watched_cc_address', '')
@@ -204,8 +204,82 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // ── Whoever has written back ──────────────────────────
+      //
+      // Until now this route only ever looked for new conversations to chase.
+      // Replies were noticed in exactly one place — /api/gmail/webhook — which
+      // only fires if Google push is running, and nothing in this app ever
+      // starts that subscription. So a sequence carried on chasing people who
+      // had already answered. This is that gap closed.
+      const { data: tracked } = await supabase
+        .from('threads')
+        .select('id, gmail_thread_id, recipient_email, sender_email')
+        .eq('user_id', s.user_id)
+        .not('status', 'in', '("pending_setup","replied","completed","failed","sending")')
+
+      let repliesFound = 0
+
+      if (tracked && tracked.length > 0) {
+        const byThread = new Map(tracked.map(t => [t.gmail_thread_id, t]))
+
+        // Ask only about mail from the people being chased. Searching the whole
+        // mailbox would bury a reply behind everything else that arrived today.
+        const addresses = Array.from(new Set(tracked.map(t => t.recipient_email).filter(Boolean)))
+
+        for (let i = 0; i < addresses.length; i += 20) {
+          const batch = addresses.slice(i, i + 20)
+          const found = await gmail.users.messages.list({
+            userId: 'me',
+            q: `newer_than:30d from:(${batch.join(' OR ')})`,
+            maxResults: 100,
+          })
+
+          for (const m of found.data.messages ?? []) {
+            if (!m.threadId || !m.id) continue
+            const thread = byThread.get(m.threadId)
+            if (!thread) continue
+
+            const detail = await gmail.users.messages.get({
+              userId: 'me',
+              id: m.id,
+              format: 'metadata',
+              metadataHeaders: ['From'],
+            })
+            const from = detail.data.payload?.headers
+              ?.find(h => h.name?.toLowerCase() === 'from')?.value ?? ''
+
+            if (!isReplyFromRecipient(from, thread.recipient_email, thread.sender_email)) continue
+
+            await supabase
+              .from('threads')
+              .update({ status: 'replied', replied_at: new Date().toISOString() })
+              .eq('id', thread.id)
+
+            // Answered once is answered. Dropping it stops a second message in
+            // the same thread costing another lookup and another write.
+            byThread.delete(m.threadId)
+            repliesFound++
+          }
+        }
+      }
+
+      // ── Which mailbox these tokens belong to ──────────────
+      //
+      // Recorded at connect time from now on. Anyone already connected has no
+      // address stored, and outbound cannot find their account without it.
+      if (!s.gmail_address) {
+        const oauth2 = google.oauth2({ version: 'v2', auth })
+        const info = await oauth2.userinfo.get()
+        if (info.data.email) {
+          await supabase
+            .from('settings')
+            .update({ gmail_address: info.data.email })
+            .eq('user_id', s.user_id)
+        }
+      }
+
       results[s.user_id] = newCount
-      pollDebug[uid] = { ...pollDebug[uid] as object, threadsFound: newCount }
+      pollDebug[uid] = { ...pollDebug[uid] as object, threadsFound: newCount, repliesFound }
     } catch (err) {
       const errMsg = (err as any)?.message ?? String(err)
       pollDebug[uid] = { ...pollDebug[uid] as object, error: errMsg }

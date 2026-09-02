@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { exchangeCodeForTokens } from '@/lib/gmail'
+import { exchangeCodeForTokens, gmailAddressFor } from '@/lib/gmail'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
@@ -38,6 +38,18 @@ export async function GET(request: NextRequest) {
 
     if (upsertError) console.error('Settings upsert error:', upsertError.message)
     else console.log('Gmail tokens saved for user:', user.id)
+
+    // Which mailbox these tokens belong to. Recorded now because outbound is
+    // told who should send and has to find the matching account — the tokens
+    // alone do not say. Best effort: failing to read it must not cost the
+    // connection that has just succeeded, and the poll backfills it later.
+    const address = await gmailAddressFor(user.id)
+    if (address) {
+      await serviceClient
+        .from('settings')
+        .update({ gmail_address: address })
+        .eq('user_id', user.id)
+    }
   } catch (err) {
     console.error('Token exchange error:', err)
     return NextResponse.redirect(`${base}/settings?gmail=error`)

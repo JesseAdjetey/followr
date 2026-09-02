@@ -189,6 +189,87 @@ export async function sendReply(
   return res.data.id ?? null
 }
 
+/**
+ * Start a conversation, rather than continue one.
+ *
+ * sendReply covers everything Followr did until now: every thread arrived by
+ * being Cc'd, so there was always a message to reply into. Sending the first
+ * email is the same Gmail call with the threading removed — no In-Reply-To, no
+ * References, and no threadId, so Google opens a new thread and hands back the
+ * ids for it.
+ *
+ * Throws rather than returning null on failure: the caller has to tell the
+ * difference between "Gmail refused this" and "the network died mid-flight",
+ * and a null cannot carry that.
+ */
+export async function sendNew(
+  userId: string,
+  toEmail: string,
+  toName: string | null,
+  subject: string,
+  body: string,
+  fromName?: string | null
+): Promise<{ messageId: string; threadId: string; fromEmail: string }> {
+  const auth = await getAuthenticatedClient(userId)
+  const gmail = google.gmail({ version: 'v1', auth })
+
+  const oauth2 = google.oauth2({ version: 'v2', auth })
+  const userInfo = await oauth2.userinfo.get()
+  const fromEmail = userInfo.data.email!
+
+  const rawMessage = [
+    `From: ${fromName ? `${fromName} <${fromEmail}>` : fromEmail}`,
+    `To: ${toName ? `${toName} <${toEmail}>` : toEmail}`,
+    `Subject: ${subject}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/plain; charset=utf-8',
+    '',
+    body,
+  ].join('\r\n')
+
+  const res = await gmail.users.messages.send({
+    userId: 'me',
+    requestBody: { raw: Buffer.from(rawMessage).toString('base64url') },
+  })
+
+  if (!res.data.id || !res.data.threadId) {
+    throw new Error('Gmail accepted the message but returned no ids')
+  }
+
+  return { messageId: res.data.id, threadId: res.data.threadId, fromEmail }
+}
+
+/**
+ * The address a user's stored tokens actually belong to.
+ *
+ * Needed because outbound is told *who* should send ("as Jesse") and has to
+ * find the matching mailbox. The tokens alone do not say.
+ */
+export async function gmailAddressFor(userId: string): Promise<string | null> {
+  try {
+    const auth = await getAuthenticatedClient(userId)
+    const oauth2 = google.oauth2({ version: 'v2', auth })
+    const info = await oauth2.userinfo.get()
+    return info.data.email ?? null
+  } catch (err) {
+    console.warn(`Could not read the Gmail address for user ${userId}:`, err)
+    return null
+  }
+}
+
+/**
+ * Whether Google refused the request, as opposed to never hearing it.
+ *
+ * The distinction decides whether a retry is safe: a refusal means nothing was
+ * sent, while a connection that died mid-flight may have delivered the message
+ * and simply not said so.
+ */
+export function wasRefusedByGoogle(err: unknown): boolean {
+  const status = (err as { response?: { status?: number }; status?: number } | null)?.response?.status
+    ?? (err as { status?: number } | null)?.status
+  return typeof status === 'number' && status >= 400
+}
+
 /** Call gmail.users.watch with Pub/Sub topic */
 export async function startGmailWatch(userId: string): Promise<{ historyId: string; expiration: string } | null> {
   const auth = await getAuthenticatedClient(userId)
