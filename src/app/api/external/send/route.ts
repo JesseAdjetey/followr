@@ -11,7 +11,7 @@
 import crypto from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabaseClient } from '@/lib/supabase-server'
-import { sendNew, wasRefusedByGoogle, isInvalidGrantError, clearGmailTokens } from '@/lib/gmail'
+import { sendNew, substituteVariables, wasRefusedByGoogle, isInvalidGrantError, clearGmailTokens } from '@/lib/gmail'
 import { computeScheduledDates } from '@/lib/sequence'
 import type { StepDraft } from '@/types'
 
@@ -43,6 +43,9 @@ type Incoming = {
   to?: { email?: string; name?: string | null }
   subject?: string
   body?: string
+  /** Wording held by Followr, filled in here. An alternative to body. */
+  templateId?: string
+  variables?: Record<string, unknown>
   chase?: { sendMode?: string; steps?: ChaseStep[] }
 }
 
@@ -60,14 +63,14 @@ export async function POST(req: NextRequest) {
   const from = payload?.from?.trim().toLowerCase()
   const toEmail = payload?.to?.email?.trim()
   const subject = payload?.subject?.trim()
-  const body = payload?.body?.trim()
+  const templateId = payload?.templateId?.trim()
 
   const missing = [
     !idempotencyKey && 'idempotencyKey',
     !from && 'from',
     !toEmail && 'to.email',
     !subject && 'subject',
-    !body && 'body',
+    !payload?.body?.trim() && !templateId && 'body or templateId',
   ].filter(Boolean)
 
   if (missing.length > 0) {
@@ -111,6 +114,39 @@ export async function POST(req: NextRequest) {
   const userId = account.user_id as string
   const now = new Date()
 
+  // Wording either arrives finished, or is named and lives here. Naming it is
+  // the better half of the bargain: it means the text a customer reads can be
+  // changed on the Templates screen rather than in somebody else's deployment.
+  let body = payload?.body?.trim() ?? ''
+
+  if (!body && templateId) {
+    const { data: template } = await supabase
+      .from('templates')
+      .select('body')
+      .eq('user_id', userId)
+      .eq('id', templateId)
+      .maybeSingle()
+
+    if (!template) {
+      return NextResponse.json(
+        { error: 'That template no longer exists. Pick another one and try again.' },
+        { status: 404 },
+      )
+    }
+
+    const variables: Record<string, string> = {}
+    for (const [key, value] of Object.entries(payload?.variables ?? {})) {
+      if (typeof value === 'string') variables[key] = value
+      else if (typeof value === 'number' || typeof value === 'boolean') variables[key] = String(value)
+    }
+
+    body = substituteVariables(template.body, variables).trim()
+  }
+
+  if (!body) {
+    return NextResponse.json({ error: 'The message came out empty.' }, { status: 400 })
+  }
+
   // ── Claim before sending ─────────────────────────────────
   //
   // The caller retries, and a timeout after Gmail accepted the message looks
@@ -131,7 +167,7 @@ export async function POST(req: NextRequest) {
     recipient_email: toEmail,
     sender_name: payload?.fromName ?? null,
     sender_email: from,
-    email_snippet: (body as string).slice(0, 160),
+    email_snippet: body.slice(0, 160),
     email_date: now.toISOString(),
     send_mode: payload?.chase?.sendMode === 'requires_approval' ? 'requires_approval' : 'auto_send',
     status: 'sending',
@@ -206,7 +242,7 @@ export async function POST(req: NextRequest) {
   // ── Send ─────────────────────────────────────────────────
   let sent: { messageId: string; threadId: string; fromEmail: string }
   try {
-    sent = await sendNew(userId, toEmail as string, payload?.to?.name ?? null, subject as string, body as string, payload?.fromName ?? null)
+    sent = await sendNew(userId, toEmail as string, payload?.to?.name ?? null, subject as string, body, payload?.fromName ?? null)
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err)
 

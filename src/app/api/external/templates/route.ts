@@ -32,6 +32,31 @@ function authorised(req: NextRequest): boolean {
 
 type Incoming = { name?: string; body?: string; variables?: string[] }
 
+// GET /api/external/templates?email=… — the wording available to an account.
+//
+// So the scheduling app can offer a choice of template rather than hard-coding
+// one. The bodies come too: whoever is picking wants to see what they are
+// picking, not a list of names.
+export async function GET(req: NextRequest) {
+  if (!authorised(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const email = req.nextUrl.searchParams.get('email')?.trim()
+  if (!email) return NextResponse.json({ error: 'email is required' }, { status: 400 })
+
+  const supabase = createServiceSupabaseClient()
+  const { data: users } = await supabase.auth.admin.listUsers()
+  const user = users?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase())
+  if (!user) return NextResponse.json({ templates: [], reason: 'no_account' })
+
+  const { data } = await supabase
+    .from('templates')
+    .select('id, name, body, variables')
+    .eq('user_id', user.id)
+    .order('name')
+
+  return NextResponse.json({ templates: data ?? [] })
+}
+
 export async function POST(req: NextRequest) {
   if (!authorised(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
