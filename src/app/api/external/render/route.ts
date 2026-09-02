@@ -31,8 +31,10 @@ function authorised(req: NextRequest): boolean {
   return Boolean(presented) && safeEqual(presented as string, expected)
 }
 
+// Next only allows a route file to export its handlers and its config, so
+// this stays local rather than being shared.
 /** Everything a template might ask for, as strings, with nothing undefined. */
-export function asVariables(input: unknown): Record<string, string> {
+function asVariables(input: unknown): Record<string, string> {
   const out: Record<string, string> = {}
   if (input && typeof input === 'object') {
     for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
